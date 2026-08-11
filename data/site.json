@@ -1,0 +1,590 @@
+{
+  "version": 1,
+  "hero": {
+    "branding": {
+      "logoSrc": "/uploads/cms/1778946446141-numylg13.webp",
+      "logoAlt": "JD Gold",
+      "title": "JD GOLD",
+      "subtitle": "Refinery & Jewelry Factory"
+    },
+    "slides": [
+      {
+        "type": "image",
+        "src": "/uploads/cms/1784406462456-2o2hynkp-main.webp",
+        "alt": "Mom sees old Honda Accord 202607180241 hero",
+        "thumbSrc": "/uploads/cms/1784406462456-2o2hynkp-strip.webp",
+        "thumbSrcSm": "/uploads/cms/1784406462456-2o2hynkp-strip-sm.webp",
+        "srcSm": "/uploads/cms/1784406462456-2o2hynkp-main-sm.webp"
+      },
+      {
+        "type": "image",
+        "src": "/uploads/cms/1779263260447-3w4nlkjc-main.webp",
+        "alt": "Screenshot 2026 05 14 at 11.30.18 PM hero",
+        "thumbSrc": "/uploads/cms/1779263260447-3w4nlkjc-strip.webp",
+        "thumbSrcSm": "/uploads/cms/1779263260447-3w4nlkjc-strip-sm.webp",
+        "srcSm": "/uploads/cms/1779263260447-3w4nlkjc-main-sm.webp"
+      },
+      {
+        "type": "image",
+        "src": "/uploads/cms/1778441794162-7s3i363k.webp",
+        "alt": "WhatsApp Image 2026 04 07 at 23.43.53 hero"
+      },
+      {
+        "type": "video",
+        "src": "/uploads/cms/1778439185535-irase9xt.mp4"
+      },
+      {
+        "type": "image",
+        "src": "/uploads/cms/1778438011526-hdu9agiv.jpeg",
+        "alt": "WhatsApp Image 2026 04 07 at 23.43.54"
+      },
+      {
+        "type": "video",
+        "src": "/videos/hero-1.mp4"
+      },
+      {
+        "type": "video",
+        "src": "/videos/hero-2.mp4"
+      },
+      {
+        "type": "video",
+        "src": "/videos/hero-3.mp4"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-gold-bar-hand.png",
+        "alt": "JD Gold branded gold bar"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-company-wealth.png",
+        "alt": "JD Gold — company wealth"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-pricing.png",
+        "alt": "JD Gold pricing and market leadership"
+      },
+      {
+        "type": "image",
+        "src": "/images/about-refinery-portrait.png",
+        "alt": "JD Gold refinery representative portrait"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-01.png",
+        "alt": "JD Gold one kilo fine gold bar"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-02.png",
+        "alt": "JD Gold meeting at waterfront location"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-03.png",
+        "alt": "JD Gold jewelry production trays"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-04.png",
+        "alt": "JD Gold bracelet inventory display"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-05.png",
+        "alt": "JD Gold pendant collection tray"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-06.png",
+        "alt": "JD Gold engraved pendant assortment"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-07.png",
+        "alt": "JD Gold chain bundles in production tray"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-08.png",
+        "alt": "JD Gold machining workshop floor"
+      },
+      {
+        "type": "image",
+        "src": "/images/hero-slide-whatsapp-09.png",
+        "alt": "Gold granules and analyzer device"
+      }
+    ]
+  },
+  "teamManagement": {
+    "members": [
+      {
+        "id": "member-1",
+        "name": "Syed Abdi Hussain",
+        "designation": "Designation",
+        "image": "/images/management-lead-1.png",
+        "imageAlt": "Syed Abdi Hussain"
+      },
+      {
+        "id": "member-2",
+        "name": "Syed Amir Abdi Bukhari",
+        "designation": "Designation",
+        "image": "/images/management-lead-2.png",
+        "imageAlt": "Syed Amir Abdi Bukhari"
+      },
+      {
+        "id": "member-3",
+        "name": "Ma'am Dilara Ahmad",
+        "designation": "Designation",
+        "image": "/images/management-lead-3.png",
+        "imageAlt": "Ma'am Dilara Ahmad"
+      },
+      {
+        "id": "member-4",
+        "name": "Rana Nazar",
+        "designation": "Designation",
+        "image": "/images/management-lead-4.png",
+        "imageAlt": "Rana Nazar"
+      },
+      {
+        "id": "member-5",
+        "name": "Malik Ijaz Ahmad",
+        "designation": "Designation",
+        "image": "/images/management-lead-5.png",
+        "imageAlt": "Malik Ijaz Ahmad"
+      },
+      {
+        "id": "member-mpa3l963bkhghq",
+        "name": "Mr. Zhang Wei",
+        "designation": "Head Cambodia Branch",
+        "image": "/uploads/cms/1779041928249-dh1en045.webp",
+        "imageAlt": "Mr. Zhang Wei"
+      },
+      {
+        "id": "member-mpa55rcrqx647s",
+        "name": "Mr.Kayemba Alex",
+        "designation": "Head Uganda Branch",
+        "image": "/uploads/cms/1779044527725-gvczsesv.webp",
+        "imageAlt": "Mr.Kayemba Alex"
+      }
+    ]
+  },
+  "homeRightGallery": {
+    "staff": {
+      "title": "Staff",
+      "slots": [
+        {
+          "image": "/images/management-gallery-1.png",
+          "alt": "Staff gallery 1"
+        },
+        {
+          "image": "/images/management-gallery-2.png",
+          "alt": "Staff gallery 2"
+        },
+        {
+          "image": "/images/management-gallery-3.png",
+          "alt": "Staff gallery 3"
+        },
+        {
+          "image": "/images/management-gallery-4.png",
+          "alt": "Staff gallery 4"
+        },
+        {
+          "image": "/images/management-gallery-6.png",
+          "alt": "Staff gallery 5"
+        },
+        {
+          "image": "/images/management-gallery-7.png",
+          "alt": "Staff gallery 6"
+        }
+      ]
+    },
+    "refinery": {
+      "title": "Refinery",
+      "slots": [
+        {
+          "image": "/images/hero-slide-whatsapp-03.png",
+          "alt": "Refinery 1"
+        },
+        {
+          "image": "/images/management-gallery-4.png",
+          "alt": "Refinery 2"
+        },
+        {
+          "image": "/images/management-gallery-6.png",
+          "alt": "Refinery 3"
+        },
+        {
+          "image": "/images/management-gallery-7.png",
+          "alt": "Refinery 4"
+        },
+        {
+          "image": "/images/management-gallery-8.png",
+          "alt": "Refinery 5"
+        },
+        {
+          "image": "/images/management-gallery-9.png",
+          "alt": "Refinery 6"
+        }
+      ]
+    },
+    "licenseOffice": {
+      "title": "License & Office",
+      "slots": [
+        {
+          "image": "/images/about-refinery-portrait.png",
+          "alt": "License & office 1"
+        },
+        {
+          "image": "/images/product-gold-nuggets.png",
+          "alt": "License & office 2"
+        },
+        {
+          "image": "/images/product-cast-gold-bars.png",
+          "alt": "License & office 3"
+        }
+      ]
+    },
+    "jewelryFactory": {
+      "title": "Jewelry Factory",
+      "slots": [
+        {
+          "image": "/images/hero-slide-whatsapp-01.png",
+          "alt": "Jewelry factory 1"
+        },
+        {
+          "image": "/images/product-gold-pellets.png",
+          "alt": "Jewelry factory 2"
+        },
+        {
+          "image": "/images/hero-slide-whatsapp-01.png",
+          "alt": "Jewelry factory 3"
+        },
+        {
+          "image": "/images/hero-slide-whatsapp-03.png",
+          "alt": "Jewelry factory 4"
+        },
+        {
+          "image": "/images/management-gallery-2.png",
+          "alt": "Jewelry factory 5"
+        },
+        {
+          "image": "/images/management-gallery-3.png",
+          "alt": "Jewelry factory 6"
+        }
+      ]
+    },
+    "products": {
+      "title": "Products",
+      "slots": [
+        {
+          "image": "/images/product-investment-grade-bar.png",
+          "alt": "Product 1"
+        },
+        {
+          "image": "/images/product-refined-nuggets.png",
+          "alt": "Product 2"
+        },
+        {
+          "image": "/images/hero-slide-whatsapp-04.png",
+          "alt": "Product 3"
+        },
+        {
+          "image": "/images/product-gold-nuggets.png",
+          "alt": "Product 4"
+        },
+        {
+          "image": "/images/product-cast-gold-bars.png",
+          "alt": "Product 5"
+        },
+        {
+          "image": "/images/product-gold-pellets.png",
+          "alt": "Product 6"
+        }
+      ]
+    }
+  },
+  "whyChooseSection": {
+    "heading": "Why Choose JD Gold?",
+    "features": [
+      {
+        "title": "99% Pure Gold",
+        "description": "Certified purity ensuring premium quality products."
+      },
+      {
+        "title": "Advanced Technology",
+        "description": "Modern refining processes for maximum efficiency and precision."
+      },
+      {
+        "title": "Trusted Worldwide",
+        "description": "Serving global clients with a strong reputation."
+      },
+      {
+        "title": "Secure Transactions",
+        "description": "Transparent, safe, and fully compliant operations."
+      },
+      {
+        "title": "Expert Team",
+        "description": "Highly skilled professionals with industry expertise."
+      }
+    ],
+    "stats": [
+      {
+        "value": "10+",
+        "label": "Years of",
+        "labelLine2": "Experience"
+      },
+      {
+        "value": "50+",
+        "label": "Expert",
+        "labelLine2": "Employees"
+      },
+      {
+        "value": "1k +",
+        "label": "Happy",
+        "labelLine2": "Clients"
+      },
+      {
+        "value": "500kg +",
+        "label": "Gold Produced Monthly"
+      },
+      {
+        "value": "24/7",
+        "label": "Customer",
+        "labelLine2": "Support"
+      }
+    ],
+    "mission": {
+      "title": "Mission",
+      "body": "To deliver world-class gold products and services with integrity, innovation, and a commitment to excellence, ensuring long-term value for our clients."
+    },
+    "missionImage": "/images/product-investment-grade-bar.png",
+    "missionImageAlt": "JD Gold mission",
+    "vision": {
+      "title": "Vision",
+      "body": "To be a global leader in the gold industry, setting new standards in quality, trust, and technological advancement."
+    },
+    "visionIcon": "/images/why-choose-vision-icon.png",
+    "visionIconAlt": "Vision"
+  },
+  "buildingTrustSection": {
+    "heading": "Building Trust in Gold",
+    "slots": [
+      {
+        "image": "/images/hero-slide-whatsapp-03.png",
+        "alt": "Gold production"
+      },
+      {
+        "image": "/images/product-gold-weighed.png",
+        "alt": "Gold weighed"
+      },
+      {
+        "image": "/images/location-dubai-refinery.png",
+        "alt": "Dubai refinery"
+      },
+      {
+        "image": "/images/product-gold-pellets.png",
+        "alt": "Gold pellets"
+      },
+      {
+        "image": "/images/management-gallery-4.png",
+        "alt": "JD Gold operations"
+      }
+    ]
+  },
+  "goldProductsSection": {
+    "heading": "Our Gold Products",
+    "products": [
+      {
+        "label": "Gold Bars (999.9)",
+        "image": "/images/product-investment-grade-bar.png",
+        "imageAlt": "Gold bars 999.9"
+      },
+      {
+        "label": "Gold Bullion",
+        "image": "/images/management-collage-01.png",
+        "imageAlt": "Gold bullion"
+      },
+      {
+        "label": "Gold Nuggets",
+        "image": "/images/management-collage-02.png",
+        "imageAlt": "Gold nuggets"
+      },
+      {
+        "label": "Gold Granules",
+        "image": "/images/hero-slide-whatsapp-04.png",
+        "imageAlt": "Gold granules"
+      },
+      {
+        "label": "Gold Dust",
+        "image": "/images/product-refined-nuggets.png",
+        "imageAlt": "Gold dust"
+      },
+      {
+        "label": "Gold Bars (999.9)",
+        "image": "/images/product-investment-grade-bar.png",
+        "imageAlt": "Gold bars 999.9"
+      }
+    ]
+  },
+  "goldRefiningProcessSection": {
+    "heading": "Our Gold Refining Process",
+    "steps": [
+      {
+        "step": "01",
+        "title": "Raw Material",
+        "image": "/images/management-collage-02.png",
+        "imageAlt": "Raw material"
+      },
+      {
+        "step": "02",
+        "title": "Melting",
+        "image": "/images/hero-slide-whatsapp-03.png",
+        "imageAlt": "Melting"
+      },
+      {
+        "step": "03",
+        "title": "Refining",
+        "image": "/images/management-gallery-4.png",
+        "imageAlt": "Refining"
+      },
+      {
+        "step": "04",
+        "title": "Casting",
+        "image": "/images/hero-slide-whatsapp-04.png",
+        "imageAlt": "Casting"
+      },
+      {
+        "step": "05",
+        "title": "Quality Check",
+        "image": "/images/product-gold-weighed.png",
+        "imageAlt": "Quality check"
+      },
+      {
+        "step": "06",
+        "title": "Packaging",
+        "image": "/images/hero-slide-gold-bar-hand.png",
+        "imageAlt": "Packaging"
+      }
+    ]
+  },
+  "refiningGallerySection": {
+    "slots": [
+      {
+        "image": "/images/management-gallery-6.png",
+        "alt": "Refining gallery 1"
+      },
+      {
+        "image": "/images/management-gallery-7.png",
+        "alt": "Refining gallery 2"
+      },
+      {
+        "image": "/images/management-gallery-8.png",
+        "alt": "Refining gallery 3"
+      }
+    ]
+  },
+  "industriesWeServeSection": {
+    "heading": "Industries We Serve",
+    "leftImage": "/images/management-gallery-9.png",
+    "leftImageAlt": "Industries we serve",
+    "rightImage": "/images/management-gallery-10.png",
+    "rightImageAlt": "Industries we serve",
+    "industries": [
+      {
+        "label": "Jewelry & Fashion"
+      },
+      {
+        "label": "Banking & Financial Institutions"
+      },
+      {
+        "label": "Electronics Industry"
+      },
+      {
+        "label": "Government & Defense"
+      },
+      {
+        "label": "Commerce & Traders"
+      },
+      {
+        "label": "Global Gold Market"
+      }
+    ]
+  },
+  "miningExtractionSection": {
+    "heading": "Mining & Extraction",
+    "slots": [
+      {
+        "image": "/images/hero-slide-whatsapp-03.png",
+        "alt": "Mining operations"
+      },
+      {
+        "image": "/images/product-gold-weighed.png",
+        "alt": "Gold weighed"
+      },
+      {
+        "image": "/images/location-dubai-refinery.png",
+        "alt": "Dubai refinery"
+      },
+      {
+        "image": "/images/product-gold-pellets.png",
+        "alt": "Gold pellets"
+      },
+      {
+        "image": "/images/management-gallery-4.png",
+        "alt": "Extraction process"
+      }
+    ]
+  },
+  "globalShippingSection": {
+    "heading": "Global Shipping & Secure Delivery",
+    "features": [
+      {
+        "title": "Worldwide Shipping",
+        "description": "Serving clients across international markets."
+      },
+      {
+        "title": "Fully Insured",
+        "description": "All shipments are protected for maximum security."
+      },
+      {
+        "title": "Secure Packaging",
+        "description": "Tamper-proof and high-security packaging standards."
+      },
+      {
+        "title": "Real-Time Tracking",
+        "description": "Track shipments with complete transparency."
+      },
+      {
+        "title": "Timely Delivery",
+        "description": "Fast and reliable logistics solutions."
+      }
+    ]
+  },
+  "getInTouchSection": {
+    "heading": "Get in Touch",
+    "topImages": [
+      {
+        "image": "/images/management-gallery-11.png",
+        "alt": "Gallery"
+      },
+      {
+        "image": "/images/management-gallery-12.png",
+        "alt": "Gallery"
+      },
+      {
+        "image": "/images/license-dubai-ded-commercial-license.png",
+        "alt": "License"
+      }
+    ],
+    "leftImage": "/images/license-hong-kong-incorporation.png",
+    "leftImageAlt": "Hong Kong license",
+    "rightImage": "/images/license-usa-jd-gold-trading.png",
+    "rightImageAlt": "USA license",
+    "phone": "+92 300 1234567",
+    "whatsapp": "+86 18340320420",
+    "email": "info@jdgold.com",
+    "address": "Suite #01, Gold Tower, Main Boulevard, Karachi, Pakistan"
+  }
+}

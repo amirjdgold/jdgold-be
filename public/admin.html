@@ -1,0 +1,4700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JD Gold - Dashboard</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --panel: #ffffff;
+      --panel-2: #faf6ea;
+      --border: rgba(184, 134, 11, 0.35);
+      --gold: #a97f0f;
+      --text: #1f2733;
+      --muted: #6b7280;
+      --err: #dc2626;
+      --input-bg: #ffffff;
+      --shadow: rgba(17, 24, 39, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gold);
+      flex: 1;
+    }
+    main { margin: 0; padding: 0; max-width: none; }
+    #loginPanel {
+      max-width: 36rem;
+      margin: 0 auto;
+      padding: 1.25rem;
+    }
+    .admin-shell {
+      display: flex;
+      align-items: stretch;
+      min-height: calc(100vh - 3.5rem);
+    }
+    .side-nav {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+    .side-nav-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0 1rem 0.5rem;
+    }
+    button.nav-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.65rem 1rem;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      border-left: 3px solid transparent;
+      background: transparent;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    button.nav-item:hover {
+      background: rgba(212, 175, 55, 0.08);
+      color: var(--gold);
+    }
+    button.nav-item.active {
+      border-left-color: var(--gold);
+      background: rgba(212, 175, 55, 0.12);
+      color: var(--gold);
+    }
+    button.nav-parent {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+      text-align: left;
+      padding: 0.65rem 1rem;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      border-left: 3px solid transparent;
+      background: transparent;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    button.nav-parent:hover {
+      background: rgba(212, 175, 55, 0.08);
+      color: var(--gold);
+    }
+    button.nav-parent.active-parent {
+      border-left-color: var(--gold);
+      color: var(--gold);
+    }
+    .nav-parent-caret {
+      width: 0;
+      height: 0;
+      flex-shrink: 0;
+      border-left: 5px solid currentColor;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      transition: transform 0.15s ease;
+    }
+    button.nav-parent[aria-expanded="true"] .nav-parent-caret {
+      transform: rotate(90deg);
+    }
+    .nav-group {
+      display: none;
+    }
+    .nav-group.open {
+      display: block;
+    }
+    .nav-group button.nav-item {
+      padding-left: 1.9rem;
+      font-size: 0.86rem;
+    }
+    .admin-content {
+      flex: 1;
+      padding: 1.25rem 1.5rem;
+      min-width: 0;
+    }
+    .view-panel section:last-child {
+      margin-bottom: 0;
+    }
+    .nav-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+    .nav-toggle-bar {
+      display: block;
+      width: 18px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--gold);
+    }
+    @media (max-width: 700px) {
+      .nav-toggle {
+        display: inline-flex;
+      }
+      .admin-shell {
+        flex-direction: column;
+      }
+      .side-nav {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 0.5rem 0;
+        display: none;
+      }
+      .side-nav.open {
+        display: block;
+      }
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.25rem;
+    }
+    section h2 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+    }
+    h2.section-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .info-tip {
+      position: relative;
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      color: var(--gold);
+      cursor: help;
+      outline: none;
+    }
+    .info-tip-icon {
+      display: block;
+    }
+    .info-tip:focus-visible {
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--border);
+    }
+    .info-tip-bubble {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 50;
+      width: min(340px, 80vw);
+      padding: 0.65rem 0.8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 400;
+      line-height: 1.55;
+      letter-spacing: 0;
+      text-transform: none;
+      text-align: left;
+      box-shadow: 0 8px 24px var(--shadow);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.12s ease;
+    }
+    .info-tip-bubble strong {
+      color: var(--gold);
+    }
+    .info-tip-bubble code {
+      font-size: 0.75rem;
+      padding: 0 0.15rem;
+      border-radius: 3px;
+      background: var(--panel-2);
+    }
+    .info-tip:hover .info-tip-bubble,
+    .info-tip:focus .info-tip-bubble,
+    .info-tip:focus-within .info-tip-bubble {
+      opacity: 1;
+      visibility: visible;
+    }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 0.45rem 0.55rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      margin-bottom: 0.65rem;
+    }
+    button {
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, #d4af37, #b8860b);
+      color: #0a0a0a;
+    }
+    button.secondary {
+      background: transparent;
+      color: var(--gold);
+    }
+    button.danger {
+      background: transparent;
+      color: var(--err);
+      border-color: rgba(248, 113, 113, 0.4);
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    #slides {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+      gap: 1.25rem;
+      align-items: start;
+    }
+    #teamMembers {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (min-width: 768px) {
+      #teamMembers {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    #teamMembers .slide-card {
+      min-width: 0;
+    }
+    .slides-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 2rem 1rem;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+    }
+    .slide-card {
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 4px 14px var(--shadow);
+    }
+    .slide-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      background: rgba(212, 175, 55, 0.1);
+      border-bottom: 1px solid var(--border);
+    }
+    .slide-card.collapsible .slide-card-head {
+      cursor: pointer;
+      user-select: none;
+    }
+    .slide-card.collapsed .slide-card-head {
+      border-bottom: none;
+    }
+    .slide-card-head-left {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      min-width: 0;
+    }
+    .slide-card-caret {
+      width: 0;
+      height: 0;
+      flex-shrink: 0;
+      border-left: 6px solid var(--gold);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      transition: transform 0.15s ease;
+    }
+    .slide-card.collapsible:not(.collapsed) .slide-card-caret {
+      transform: rotate(90deg);
+    }
+    .slide-card.collapsed .slide-card-body,
+    .slide-card.collapsed .slide-card-actions {
+      display: none;
+    }
+    .slide-card-title {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+    }
+    .slide-card-meta {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: var(--panel-2);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    .slide-card-body {
+      padding: 0.95rem 1rem 1rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .slide-card-body .row { margin-top: 0.25rem; }
+    .slide-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+    .slide-card-actions button.secondary {
+      flex: 1;
+      min-width: 5rem;
+    }
+    .slide-card-actions button.danger {
+      flex: 1;
+      min-width: 5rem;
+    }
+    .slide-preview {
+      margin: 0.5rem 0 0.75rem;
+      min-height: 120px;
+      max-height: 240px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #eef0f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .slide-preview img,
+    .slide-preview video {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+    .slide-preview video {
+      background: #000;
+    }
+    .preview-empty,
+    .preview-error {
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .preview-error {
+      color: var(--err);
+    }
+    .slide-aspect-hint {
+      font-size: 0.75rem;
+      line-height: 1.35;
+      margin: 0 0 0.75rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+    }
+    .slide-aspect-hint.good {
+      color: #15803d;
+      border-color: rgba(21, 128, 61, 0.35);
+    }
+    .slide-aspect-hint.warn {
+      color: #b45309;
+      border-color: rgba(180, 83, 9, 0.35);
+    }
+    .slide-aspect-hint.bad {
+      color: var(--err);
+      border-color: rgba(248, 113, 113, 0.35);
+    }
+    .slide-aspect-hint.unknown {
+      color: var(--muted);
+    }
+    .hrg-section {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1rem 0.25rem;
+      margin-bottom: 1rem;
+      background: var(--panel-2);
+    }
+    .hrg-section h3 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+      color: var(--gold);
+    }
+    .hrg-slots-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 640px) {
+      .hrg-slots-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+    }
+    .bt-slots-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 900px) {
+      .bt-slots-row {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 1rem;
+      }
+    }
+    .gp-slots-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 640px) {
+      .gp-slots-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+    }
+    @media (min-width: 1100px) {
+      .gp-slots-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1400px) {
+      .gp-slots-row {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+    .grp-slots-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 640px) {
+      .grp-slots-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+    }
+    @media (min-width: 1100px) {
+      .grp-slots-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (min-width: 1400px) {
+      .grp-slots-row {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+    .rg-slots-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 900px) {
+      .rg-slots-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+    }
+    .iws-side-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 900px) {
+      .iws-side-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+    }
+    .iws-slots-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (min-width: 640px) {
+      .iws-slots-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+    }
+    @media (min-width: 1100px) {
+      .iws-slots-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    .hrg-slot {
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 8px;
+      padding: 0.75rem;
+      min-width: 0;
+      background: var(--panel);
+    }
+    .hrg-slot h4 {
+      margin: 0 0 0.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .hrg-slot input[type="text"] {
+      width: 100%;
+    }
+    .hrg-thumb-preview {
+      margin: 0.5rem 0;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 2 / 1;
+      max-height: 140px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      display: block;
+    }
+    #msg { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.25rem; }
+    #msg.ok { color: #15803d; }
+    #msg.bad { color: var(--err); }
+    .hint { font-size: 0.8rem; color: var(--muted); margin: 0 0 0.75rem; }
+    #loginPanel label { margin-top: 0.35rem; }
+    .hidden { display: none !important; }
+    .pick-label {
+      display: inline-block;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--gold);
+    }
+    .pick-label:hover {
+      background: rgba(212, 175, 55, 0.08);
+    }
+    .pick-label input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .crop-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .crop-modal.hidden {
+      display: none !important;
+    }
+    .crop-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.5);
+      cursor: pointer;
+    }
+    .crop-modal-panel {
+      position: relative;
+      z-index: 1;
+      width: min(960px, 100%);
+      max-height: min(92vh, 900px);
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.15rem 1.1rem;
+      box-shadow: 0 24px 64px rgba(17, 24, 39, 0.25);
+    }
+    .crop-modal-panel h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+      color: var(--gold);
+    }
+    .crop-modal-hint {
+      margin: 0 0 1rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .crop-modal-body--image {
+      display: grid;
+      grid-template-columns: 1fr min(280px, 34%);
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .crop-modal-body--image {
+        grid-template-columns: 1fr;
+      }
+    }
+    .crop-editor-wrap {
+      max-height: min(58vh, 520px);
+      background: #eef0f3;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .crop-editor-wrap img {
+      display: block;
+      max-width: 100%;
+    }
+    .hero-preview-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      display: block;
+    }
+    .hero-preview-frame {
+      aspect-ratio: 12 / 5;
+      width: 100%;
+      max-width: 100%;
+      background: #000;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-preview-frame img,
+    .hero-preview-frame video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+    .crop-modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <button
+      type="button"
+      id="navToggle"
+      class="nav-toggle hidden"
+      aria-label="Toggle sections menu"
+      aria-controls="sideNav"
+      aria-expanded="false"
+    >
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+    <h1>JD Gold - Dashboard</h1>
+    <div id="authBar" class="row hidden">
+      <button type="button" class="secondary" id="btnSignOut">Sign out</button>
+      <button type="button" id="btnSave">Save changes</button>
+    </div>
+  </header>
+  <main>
+    <div id="loginPanel">
+      <p class="hint">
+        Sign in with the same secret as <code>API_KEY</code> in the backend <code>.env</code>
+        (use the value only, not the name).
+      </p>
+      <label for="apiKey">API key</label>
+      <input id="apiKey" type="password" autocomplete="current-password" placeholder="Your API_KEY" />
+      <div class="row" style="margin-top:0.5rem">
+        <button type="button" id="btnLogin">Sign in</button>
+      </div>
+    </div>
+
+    <div id="editor" class="hidden">
+      <div class="admin-shell">
+        <aside id="sideNav" class="side-nav" aria-label="Admin sections">
+          <div class="side-nav-title">Sections</div>
+          <button
+            type="button"
+            class="nav-parent"
+            id="homeNavParent"
+            aria-expanded="true"
+            aria-controls="homeNavGroup"
+          >
+            <span>Home page</span>
+            <span class="nav-parent-caret" aria-hidden="true"></span>
+          </button>
+          <div class="nav-group open" id="homeNavGroup">
+            <button type="button" class="nav-item active" data-view="slider">
+              Home - slider
+            </button>
+            <button type="button" class="nav-item" data-view="team">Team management</button>
+            <button type="button" class="nav-item" data-view="gallery">Home — right gallery</button>
+            <button type="button" class="nav-item" data-view="why-choose">Why Choose JD Gold</button>
+            <button type="button" class="nav-item" data-view="building-trust">
+              Building Trust in Gold
+            </button>
+            <button type="button" class="nav-item" data-view="gold-products">Our Gold Products</button>
+            <button type="button" class="nav-item" data-view="gold-refining">Gold Refining Process</button>
+            <button type="button" class="nav-item" data-view="refining-gallery">Refining gallery</button>
+            <button type="button" class="nav-item" data-view="industries-serve">Industries We Serve</button>
+            <button type="button" class="nav-item" data-view="mining-extraction">Mining &amp; Extraction</button>
+            <button type="button" class="nav-item" data-view="global-shipping">Global Shipping</button>
+            <button type="button" class="nav-item" data-view="get-in-touch">Get in Touch</button>
+          </div>
+          <button type="button" class="nav-item" data-view="settings">Settings</button>
+        </aside>
+        <div class="admin-content">
+          <div id="view-slider" class="view-panel">
+            <section>
+              <h2 class="section-heading">
+                <span>Hero — slider</span>
+                <span
+                  class="info-tip"
+                  tabindex="0"
+                  role="img"
+                  aria-label="Hero slider info"
+                  aria-describedby="heroSliderInfo"
+                >
+                  <svg
+                    class="info-tip-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                    <line
+                      x1="12"
+                      y1="11"
+                      x2="12"
+                      y2="16.5"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    />
+                    <circle cx="12" cy="7.75" r="1.25" fill="currentColor" />
+                  </svg>
+                  <span id="heroSliderInfo" class="info-tip-bubble" role="tooltip">
+                    <strong>Hero strip target:</strong> about <strong>2.4:1–3.2:1</strong> (e.g.
+                    <strong>1200×500</strong>). Optimized <strong>JPEG/PNG/WebP</strong> uploads create
+                    <strong>four</strong> WebPs: desktop center (1200×500 fit),
+                    <strong>mobile center</strong> (490×600 cover, ~phone tile aspect), desktop strip
+                    (480×320), and <strong>mobile strip</strong> (200×512 cover). The site picks them by
+                    screen width. Pasting URLs by hand only sets <code>src</code> (no responsive
+                    derivatives). Off-ratio rasters open the <strong>crop step</strong>; off-ratio
+                    <strong>videos</strong> show a preview modal. SVG/GIF upload as a single file.
+                  </span>
+                </span>
+              </h2>
+              <div class="row" style="margin-bottom:0.75rem">
+                <button
+                  type="button"
+                  class="secondary"
+                  id="btnAddSlide"
+                  title="Inserts a new slide at the top of the list"
+                >
+                  Add slide
+                </button>
+              </div>
+              <div id="slides"></div>
+            </section>
+          </div>
+
+          <div id="view-team" class="view-panel hidden">
+            <p class="hint">
+              <strong>Portrait photos</strong> for the management column on the home page. Uploads are
+              optimized to <strong>640×800</strong> WebP (cover crop). You can also paste a path under
+              <code>/images/</code> or <code>/uploads/cms/</code>.
+            </p>
+            <section>
+              <h2>Team management</h2>
+              <div class="row" style="margin-bottom:0.75rem">
+                <button
+                  type="button"
+                  class="secondary"
+                  id="btnAddTeamMember"
+                  title="Add a team member card"
+                >
+                  Add member
+                </button>
+              </div>
+              <div id="teamMembers"></div>
+            </section>
+          </div>
+
+          <div id="view-gallery" class="view-panel hidden">
+            <p class="hint">
+              <strong>Right column on the home page:</strong> five blocks (Staff, Refinery, License &amp; Office,
+              Jewelry factory, Products). License &amp; Office uses <strong>three</strong> images; Staff, Refinery,
+              Jewelry factory, and Products use <strong>six</strong> (two rows of three on the site).
+              Uploads are saved as <strong>720×360</strong> WebP (cover crop). You can also paste a path under
+              <code>/images/</code> or <code>/uploads/cms/</code>.
+            </p>
+            <section>
+              <h2>Home — right gallery</h2>
+              <div id="homeRightGalleryRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-why-choose" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Why Choose JD Gold?”</strong> block: heading, five feature cards, five stat cards,
+              mission and vision copy, center mission photo, and vision card icon (upload or URL).
+            </p>
+            <section>
+              <h2>Why Choose JD Gold</h2>
+              <div id="whyChooseRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-building-trust" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Building Trust in Gold”</strong> row on the home page: section heading and five
+              image tiles. Uploads use the gallery optimizer (<strong>720×360</strong> WebP cover crop).
+            </p>
+            <section>
+              <h2>Building Trust in Gold</h2>
+              <div id="buildingTrustRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-gold-products" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Our Gold Products”</strong> row: section heading and six product cards (label,
+              image, optional alt). Uploads use the gallery optimizer (<strong>720×360</strong> WebP).
+            </p>
+            <section>
+              <h2>Our Gold Products</h2>
+              <div id="goldProductsRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-gold-refining" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Our Gold Refining Process”</strong>: heading and six step cards (step number,
+              title, background image). Uploads use the gallery optimizer (<strong>720×360</strong> WebP).
+            </p>
+            <section>
+              <h2>Gold Refining Process</h2>
+              <div id="goldRefiningRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-refining-gallery" class="view-panel hidden">
+            <p class="hint">
+              Three-image row below the refining process (no heading). Uploads use
+              <strong>720×360</strong> WebP cover crop.
+            </p>
+            <section>
+              <h2>Refining gallery</h2>
+              <div id="refiningGalleryRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-industries-serve" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Industries We Serve”</strong>: section heading, left and right side photos, and six
+              industry labels in the center grid. Uploads use the gallery optimizer (<strong>720×360</strong> WebP).
+            </p>
+            <section>
+              <h2>Industries We Serve</h2>
+              <div id="industriesServeRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-mining-extraction" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Mining &amp; Extraction”</strong>: section heading and five image tiles in a row.
+              Uploads use the gallery optimizer (<strong>720×360</strong> WebP cover crop).
+            </p>
+            <section>
+              <h2>Mining &amp; Extraction</h2>
+              <div id="miningExtractionRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-global-shipping" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Global Shipping &amp; Secure Delivery”</strong>: section heading and five feature cards
+              (title and description). Icons are fixed in the layout.
+            </p>
+            <section>
+              <h2>Global Shipping</h2>
+              <div id="globalShippingRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-get-in-touch" class="view-panel hidden">
+            <p class="hint">
+              <strong>“Get in Touch”</strong>: top gallery (3 images), contact card (heading, phone,
+              WhatsApp, email, address), and side license photos. Uploads use
+              <strong>720×360</strong> WebP cover crop.
+            </p>
+            <section>
+              <h2>Get in Touch</h2>
+              <div id="getInTouchRoot"></div>
+            </section>
+          </div>
+
+          <div id="view-settings" class="view-panel hidden">
+            <p class="hint">
+              Logo and hero titles: use <strong>Choose logo…</strong> to upload (stored under
+              <code>/uploads/cms/</code>), or paste a path / URL. Raster logos are saved as WebP up to
+              <strong>400×400</strong> (fit inside).
+            </p>
+            <section>
+              <h2>Hero — logo &amp; titles</h2>
+              <label>Logo image file</label>
+              <div class="row" style="margin-bottom:0.5rem">
+                <label class="pick-label">Choose logo…
+                  <input type="file" id="logoPick" accept="image/*" />
+                </label>
+              </div>
+              <label for="logoSrc">Path / URL (filled after upload; optional)</label>
+              <input id="logoSrc" type="text" placeholder="/uploads/cms/… or https://…" />
+              <label for="logoAlt">Logo alt text</label>
+              <input id="logoAlt" type="text" />
+              <label for="title">Title (e.g. JD GOLD)</label>
+              <input id="title" type="text" />
+              <label for="subtitle">Subtitle</label>
+              <input id="subtitle" type="text" />
+            </section>
+          </div>
+
+          <div id="msg"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="slideCropModal" class="crop-modal hidden" aria-hidden="true">
+    <div class="crop-modal-backdrop" id="slideCropBackdrop" tabindex="-1"></div>
+    <div class="crop-modal-panel" role="dialog" aria-modal="true" aria-labelledby="slideCropTitle">
+      <h2 id="slideCropTitle">Crop for hero strip</h2>
+      <p id="slideCropSubtitle" class="crop-modal-hint"></p>
+      <div id="cropBodyImage" class="crop-modal-body--image">
+        <div>
+          <div class="crop-editor-wrap">
+            <img id="slideCropImg" alt="" />
+          </div>
+        </div>
+        <div>
+          <span class="hero-preview-label" id="sitePreviewLabel">How it looks on the site (center tile)</span>
+          <div class="hero-preview-frame">
+            <img id="heroPreviewImg" alt="" />
+          </div>
+        </div>
+      </div>
+      <div id="cropBodyVideo" class="hidden">
+        <p class="crop-modal-hint" id="videoPreviewExplainer"></p>
+        <span class="hero-preview-label">Homepage slider (object-contain)</span>
+        <div class="hero-preview-frame">
+          <video id="heroPreviewVideo" muted playsinline controls></video>
+        </div>
+      </div>
+      <div class="crop-modal-actions">
+        <button type="button" class="secondary" id="slideCropCancel">Cancel</button>
+        <button type="button" id="slideCropConfirm">Use cropped image</button>
+        <button type="button" class="hidden" id="slideCropVideoUpload">Upload this video</button>
+      </div>
+    </div>
+  </div>
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script>
+    const STORAGE = 'jdg_admin_api_key';
+    const MAX_TEAM_MEMBERS = 7;
+
+    const el = (id) => document.getElementById(id);
+    const loginPanel = el('loginPanel');
+    const editor = el('editor');
+    const authBar = el('authBar');
+    const slidesRoot = el('slides');
+    const teamMembersRoot = el('teamMembers');
+    const msg = el('msg');
+
+    const HRG_SECTIONS = [
+      { key: 'staff', label: 'Staff' },
+      { key: 'refinery', label: 'Refinery' },
+      { key: 'licenseOffice', label: 'License & Office' },
+      { key: 'jewelryFactory', label: 'Jewelry factory' },
+      { key: 'products', label: 'Products' },
+    ];
+
+    const HRG_SLOT_COUNTS = {
+      staff: 6,
+      refinery: 6,
+      licenseOffice: 3,
+      jewelryFactory: 6,
+      products: 6,
+    };
+
+    const HRG_DEFAULTS = {
+      staff: {
+        title: 'Staff',
+        slots: [
+          { image: '/images/management-gallery-1.png', alt: 'Staff gallery 1' },
+          { image: '/images/management-gallery-2.png', alt: 'Staff gallery 2' },
+          { image: '/images/management-gallery-3.png', alt: 'Staff gallery 3' },
+          { image: '/images/management-gallery-4.png', alt: 'Staff gallery 4' },
+          { image: '/images/management-gallery-6.png', alt: 'Staff gallery 5' },
+          { image: '/images/management-gallery-7.png', alt: 'Staff gallery 6' },
+        ],
+      },
+      refinery: {
+        title: 'Refinery',
+        slots: [
+          { image: '/images/hero-slide-whatsapp-03.png', alt: 'Refinery 1' },
+          { image: '/images/management-gallery-4.png', alt: 'Refinery 2' },
+          { image: '/images/management-gallery-6.png', alt: 'Refinery 3' },
+          { image: '/images/management-gallery-7.png', alt: 'Refinery 4' },
+          { image: '/images/management-gallery-8.png', alt: 'Refinery 5' },
+          { image: '/images/management-gallery-9.png', alt: 'Refinery 6' },
+        ],
+      },
+      licenseOffice: {
+        title: 'License & Office',
+        slots: [
+          { image: '/images/about-refinery-portrait.png', alt: 'License & office 1' },
+          { image: '/images/product-gold-nuggets.png', alt: 'License & office 2' },
+          { image: '/images/product-cast-gold-bars.png', alt: 'License & office 3' },
+        ],
+      },
+      jewelryFactory: {
+        title: 'Jewelry Factory',
+        slots: [
+          { image: '/images/hero-slide-whatsapp-01.png', alt: 'Jewelry factory 1' },
+          { image: '/images/product-gold-pellets.png', alt: 'Jewelry factory 2' },
+          { image: '/images/hero-slide-whatsapp-01.png', alt: 'Jewelry factory 3' },
+          { image: '/images/hero-slide-whatsapp-03.png', alt: 'Jewelry factory 4' },
+          { image: '/images/management-gallery-2.png', alt: 'Jewelry factory 5' },
+          { image: '/images/management-gallery-3.png', alt: 'Jewelry factory 6' },
+        ],
+      },
+      products: {
+        title: 'Products',
+        slots: [
+          { image: '/images/product-investment-grade-bar.png', alt: 'Product 1' },
+          { image: '/images/product-refined-nuggets.png', alt: 'Product 2' },
+          { image: '/images/hero-slide-whatsapp-04.png', alt: 'Product 3' },
+          { image: '/images/product-gold-nuggets.png', alt: 'Product 4' },
+          { image: '/images/product-cast-gold-bars.png', alt: 'Product 5' },
+          { image: '/images/product-gold-pellets.png', alt: 'Product 6' },
+        ],
+      },
+    };
+
+    function hrgSlotCount(key) {
+      return HRG_SLOT_COUNTS[key] || 3;
+    }
+
+    function hrgSectionLabel(key) {
+      const f = HRG_SECTIONS.find((s) => s.key === key);
+      return f ? f.label : key;
+    }
+
+    function ensureHomeRightGallery() {
+      const base = HRG_DEFAULTS;
+      if (!site || !site.homeRightGallery || typeof site.homeRightGallery !== 'object') {
+        if (site) site.homeRightGallery = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const g = site.homeRightGallery;
+      for (const key of Object.keys(base)) {
+        const d = base[key];
+        let sec = g[key];
+        if (!sec || typeof sec !== 'object') sec = {};
+        const title =
+          typeof sec.title === 'string' && sec.title.trim()
+            ? sec.title.trim()
+            : d.title;
+        const count = hrgSlotCount(key);
+        let slots = Array.isArray(sec.slots) ? sec.slots.slice(0, count) : [];
+        while (slots.length < count) {
+          const i = slots.length;
+          slots.push({
+            image: d.slots[i].image,
+            alt: d.slots[i].alt,
+          });
+        }
+        slots = slots.map((s, i) => ({
+          image:
+            (s && typeof s.image === 'string' && s.image.trim()) ||
+            d.slots[i].image,
+          alt:
+            (s && typeof s.alt === 'string' && s.alt.trim()) || d.slots[i].alt,
+        }));
+        g[key] = { title, slots };
+      }
+    }
+
+    function renderHomeRightGallery() {
+      if (!site) return;
+      ensureHomeRightGallery();
+      const root = el('homeRightGalleryRoot');
+      if (!root) return;
+      root.textContent = '';
+      for (const { key, label } of HRG_SECTIONS) {
+        const sec = site.homeRightGallery[key];
+        const section = document.createElement('section');
+        section.className = 'hrg-section';
+        const h = document.createElement('h3');
+        h.textContent = label;
+        section.appendChild(h);
+        const titleLabel = document.createElement('label');
+        titleLabel.textContent = 'Section title';
+        const titleInput = document.createElement('input');
+        titleInput.type = 'text';
+        titleInput.dataset.hrgTitle = key;
+        titleInput.value = sec.title || '';
+        section.appendChild(titleLabel);
+        section.appendChild(titleInput);
+        const slotsRow = document.createElement('div');
+        slotsRow.className = 'hrg-slots-row';
+        const slotCount = hrgSlotCount(key);
+        for (let i = 0; i < slotCount; i++) {
+          const slot = sec.slots[i];
+          const wrap = document.createElement('div');
+          wrap.className = 'hrg-slot';
+          const sub = document.createElement('h4');
+          sub.textContent = 'Image ' + (i + 1);
+          wrap.appendChild(sub);
+          const imgLabel = document.createElement('label');
+          imgLabel.textContent = 'Image URL';
+          const imgInput = document.createElement('input');
+          imgInput.type = 'text';
+          imgInput.placeholder = '/uploads/cms/… or /images/…';
+          imgInput.dataset.hrgImage = key;
+          imgInput.dataset.hrgSlot = String(i);
+          imgInput.value = (slot && slot.image) || '';
+          wrap.appendChild(imgLabel);
+          wrap.appendChild(imgInput);
+          if (slot && slot.image) {
+            const prev = document.createElement('img');
+            prev.className = 'hrg-thumb-preview';
+            prev.alt = '';
+            prev.src = slot.image;
+            wrap.appendChild(prev);
+          }
+          const altLabel = document.createElement('label');
+          altLabel.textContent = 'Alt text (optional)';
+          const altInput = document.createElement('input');
+          altInput.type = 'text';
+          altInput.dataset.hrgAlt = key;
+          altInput.dataset.hrgSlot = String(i);
+          altInput.value = (slot && slot.alt) || '';
+          wrap.appendChild(altLabel);
+          wrap.appendChild(altInput);
+          const pickRow = document.createElement('div');
+          pickRow.className = 'row';
+          pickRow.style.marginTop = '0.35rem';
+          const pickLabel = document.createElement('label');
+          pickLabel.className = 'pick-label';
+          pickLabel.appendChild(document.createTextNode('Upload image…'));
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          fileInput.dataset.hrgUpload = key;
+          fileInput.dataset.hrgSlot = String(i);
+          pickLabel.appendChild(fileInput);
+          pickRow.appendChild(pickLabel);
+          wrap.appendChild(pickRow);
+          slotsRow.appendChild(wrap);
+        }
+        section.appendChild(slotsRow);
+        root.appendChild(section);
+      }
+    }
+
+    function onHomeRightGalleryInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type === 'file') return;
+      const titleKey = t.dataset.hrgTitle;
+      if (titleKey) {
+        ensureHomeRightGallery();
+        site.homeRightGallery[titleKey].title = t.value;
+        return;
+      }
+      const slotIdx = t.dataset.hrgSlot;
+      const imgKey = t.dataset.hrgImage;
+      if (imgKey != null && slotIdx != null) {
+        ensureHomeRightGallery();
+        site.homeRightGallery[imgKey].slots[+slotIdx].image = t.value;
+        return;
+      }
+      const altKey = t.dataset.hrgAlt;
+      if (altKey != null && slotIdx != null) {
+        ensureHomeRightGallery();
+        site.homeRightGallery[altKey].slots[+slotIdx].alt = t.value;
+      }
+    }
+
+    async function uploadHrgSlot(key, slotIndex, file) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureHomeRightGallery();
+      site.homeRightGallery[key].slots[slotIndex].image = data.url;
+      renderHomeRightGallery();
+      showMsg('Image uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onHomeRightGalleryFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      const key = t.dataset.hrgUpload;
+      const slotI = t.dataset.hrgSlot;
+      if (!key || slotI == null) return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (f) uploadHrgSlot(key, +slotI, f);
+    }
+
+    function buildHomeRightGalleryPayload() {
+      ensureHomeRightGallery();
+      const keys = HRG_SECTIONS.map((s) => s.key);
+      const out = {};
+      for (const key of keys) {
+        const sec = site.homeRightGallery[key];
+        const title = (sec.title || '').trim();
+        if (!title) {
+          throw new Error(hrgSectionLabel(key) + ' needs a section title.');
+        }
+        const count = hrgSlotCount(key);
+        const slots = sec.slots.slice(0, count).map((s, i) => {
+          const image = (s && (s.image || '').trim()) || '';
+          const alt = (s && (s.alt || '').trim()) || '';
+          if (!image) {
+            throw new Error(
+              hrgSectionLabel(key) + ' — image ' + (i + 1) + ' needs a URL or upload.',
+            );
+          }
+          const o = { image };
+          if (alt) o.alt = alt;
+          return o;
+        });
+        out[key] = { title, slots };
+      }
+      return out;
+    }
+
+    const WC_FEATURE_COUNT = 5;
+    const WC_STAT_COUNT = 5;
+
+    const WC_DEFAULTS = {
+      heading: 'Why Choose JD Gold?',
+      features: [
+        { title: '99% Pure Gold', description: 'Certified purity ensuring premium quality products.' },
+        { title: 'Advanced Technology', description: 'Modern refining processes for maximum efficiency and precision.' },
+        { title: 'Trusted Worldwide', description: 'Serving global clients with a strong reputation.' },
+        { title: 'Secure Transactions', description: 'Transparent, safe, and fully compliant operations.' },
+        { title: 'Expert Team', description: 'Highly skilled professionals with industry expertise.' },
+      ],
+      stats: [
+        { value: '10+', label: 'Years of', labelLine2: 'Experience' },
+        { value: '50+', label: 'Expert', labelLine2: 'Employees' },
+        { value: '1k +', label: 'Happy', labelLine2: 'Clients' },
+        { value: '500kg +', label: 'Gold Produced Monthly' },
+        { value: '24/7', label: 'Customer', labelLine2: 'Support' },
+      ],
+      mission: {
+        title: 'Mission',
+        body: 'To deliver world-class gold products and services with integrity, innovation, and a commitment to excellence, ensuring long-term value for our clients.',
+      },
+      missionImage: '/images/product-investment-grade-bar.png',
+      missionImageAlt: 'JD Gold mission',
+      vision: {
+        title: 'Vision',
+        body: 'To be a global leader in the gold industry, setting new standards in quality, trust, and technological advancement.',
+      },
+      visionIcon: '/images/why-choose-vision-icon.png',
+      visionIconAlt: 'Vision',
+    };
+
+    function ensureWhyChooseSection() {
+      const base = WC_DEFAULTS;
+      if (!site || !site.whyChooseSection || typeof site.whyChooseSection !== 'object') {
+        if (site) site.whyChooseSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const w = site.whyChooseSection;
+      w.heading =
+        typeof w.heading === 'string' && w.heading.trim()
+          ? w.heading.trim()
+          : base.heading;
+      let features = Array.isArray(w.features) ? w.features.slice(0, WC_FEATURE_COUNT) : [];
+      while (features.length < WC_FEATURE_COUNT) {
+        features.push({ ...base.features[features.length] });
+      }
+      w.features = features.map((f, i) => ({
+        title: (f.title || '').trim() || base.features[i].title,
+        description: (f.description || '').trim() || base.features[i].description,
+      }));
+      let stats = Array.isArray(w.stats) ? w.stats.slice(0, WC_STAT_COUNT) : [];
+      while (stats.length < WC_STAT_COUNT) {
+        stats.push({ ...base.stats[stats.length] });
+      }
+      w.stats = stats.map((s, i) => {
+        const o = {
+          value: (s.value || '').trim() || base.stats[i].value,
+          label: (s.label || '').trim() || base.stats[i].label,
+        };
+        const l2 = (s.labelLine2 || '').trim() || base.stats[i].labelLine2 || '';
+        if (l2) o.labelLine2 = l2;
+        return o;
+      });
+      w.mission = {
+        title: (w.mission?.title || '').trim() || base.mission.title,
+        body: (w.mission?.body || '').trim() || base.mission.body,
+      };
+      w.missionImage = (w.missionImage || '').trim() || base.missionImage;
+      w.missionImageAlt = (w.missionImageAlt || '').trim() || base.missionImageAlt;
+      w.vision = {
+        title: (w.vision?.title || '').trim() || base.vision.title,
+        body: (w.vision?.body || '').trim() || base.vision.body,
+      };
+      w.visionIcon = (w.visionIcon || '').trim() || base.visionIcon;
+      w.visionIconAlt = (w.visionIconAlt || '').trim() || base.visionIconAlt;
+    }
+
+    function wcField(labelText, input) {
+      const lab = document.createElement('label');
+      lab.textContent = labelText;
+      return [lab, input];
+    }
+
+    function renderWhyChooseSection() {
+      if (!site) return;
+      ensureWhyChooseSection();
+      const root = el('whyChooseRoot');
+      if (!root) return;
+      const w = site.whyChooseSection;
+      root.textContent = '';
+
+      const headSec = document.createElement('section');
+      headSec.className = 'hrg-section';
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Section heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.wcHeading = '1';
+      headIn.value = w.heading;
+      headSec.appendChild(h3);
+      headSec.appendChild(headIn);
+      root.appendChild(headSec);
+
+      const featSec = document.createElement('section');
+      featSec.className = 'hrg-section';
+      featSec.innerHTML = '<h3>Feature cards (5)</h3>';
+      const featRow = document.createElement('div');
+      featRow.className = 'hrg-slots-row';
+      for (let i = 0; i < WC_FEATURE_COUNT; i++) {
+        const f = w.features[i];
+        const slot = document.createElement('div');
+        slot.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Card ' + (i + 1);
+        slot.appendChild(sub);
+        const tLab = document.createElement('label');
+        tLab.textContent = 'Title';
+        const tIn = document.createElement('input');
+        tIn.type = 'text';
+        tIn.dataset.wcFeatureTitle = String(i);
+        tIn.value = f.title;
+        const dLab = document.createElement('label');
+        dLab.textContent = 'Description';
+        const dIn = document.createElement('textarea');
+        dIn.rows = 3;
+        dIn.dataset.wcFeatureDesc = String(i);
+        dIn.value = f.description;
+        slot.appendChild(tLab);
+        slot.appendChild(tIn);
+        slot.appendChild(dLab);
+        slot.appendChild(dIn);
+        featRow.appendChild(slot);
+      }
+      featSec.appendChild(featRow);
+      root.appendChild(featSec);
+
+      const statSec = document.createElement('section');
+      statSec.className = 'hrg-section';
+      statSec.innerHTML = '<h3>Stat cards (5)</h3>';
+      const statRow = document.createElement('div');
+      statRow.className = 'hrg-slots-row';
+      for (let i = 0; i < WC_STAT_COUNT; i++) {
+        const s = w.stats[i];
+        const slot = document.createElement('div');
+        slot.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Stat ' + (i + 1);
+        slot.appendChild(sub);
+        [['Value', 'wcStatValue', s.value], ['Label line 1', 'wcStatLabel', s.label], ['Label line 2 (optional)', 'wcStatLabel2', s.labelLine2 || '']].forEach(([lbl, key, val]) => {
+          const lab = document.createElement('label');
+          lab.textContent = lbl;
+          const inp = document.createElement('input');
+          inp.type = 'text';
+          inp.dataset[key] = String(i);
+          inp.value = val;
+          slot.appendChild(lab);
+          slot.appendChild(inp);
+        });
+        statRow.appendChild(slot);
+      }
+      statSec.appendChild(statRow);
+      root.appendChild(statSec);
+
+      const mvSec = document.createElement('section');
+      mvSec.className = 'hrg-section';
+      mvSec.innerHTML = '<h3>Mission, photo &amp; vision</h3>';
+      [['Mission title', 'wcMissionTitle', w.mission.title], ['Mission body', 'wcMissionBody', w.mission.body, true], ['Vision title', 'wcVisionTitle', w.vision.title], ['Vision body', 'wcVisionBody', w.vision.body, true]].forEach((row) => {
+        const lab = document.createElement('label');
+        lab.textContent = row[0];
+        const inp = row[3] ? document.createElement('textarea') : document.createElement('input');
+        if (row[3]) inp.rows = 4;
+        else inp.type = 'text';
+        inp.dataset[row[1]] = '1';
+        inp.value = row[2];
+        mvSec.appendChild(lab);
+        mvSec.appendChild(inp);
+      });
+      const imgLab = document.createElement('label');
+      imgLab.textContent = 'Mission photo URL';
+      const imgIn = document.createElement('input');
+      imgIn.type = 'text';
+      imgIn.dataset.wcMissionImage = '1';
+      imgIn.value = w.missionImage;
+      mvSec.appendChild(imgLab);
+      mvSec.appendChild(imgIn);
+      if (w.missionImage) {
+        const prev = document.createElement('img');
+        prev.className = 'hrg-thumb-preview';
+        prev.alt = '';
+        prev.src = w.missionImage;
+        mvSec.appendChild(prev);
+      }
+      const altLab = document.createElement('label');
+      altLab.textContent = 'Mission photo alt';
+      const altIn = document.createElement('input');
+      altIn.type = 'text';
+      altIn.dataset.wcMissionImageAlt = '1';
+      altIn.value = w.missionImageAlt || '';
+      mvSec.appendChild(altLab);
+      mvSec.appendChild(altIn);
+      const pickRow = document.createElement('div');
+      pickRow.className = 'row';
+      const pickLabel = document.createElement('label');
+      pickLabel.className = 'pick-label';
+      pickLabel.appendChild(document.createTextNode('Upload mission photo…'));
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.dataset.wcMissionUpload = '1';
+      pickLabel.appendChild(fileInput);
+      pickRow.appendChild(pickLabel);
+      mvSec.appendChild(pickRow);
+      const visIconLab = document.createElement('label');
+      visIconLab.textContent = 'Vision icon URL';
+      const visIconIn = document.createElement('input');
+      visIconIn.type = 'text';
+      visIconIn.dataset.wcVisionIcon = '1';
+      visIconIn.value = w.visionIcon || '';
+      mvSec.appendChild(visIconLab);
+      mvSec.appendChild(visIconIn);
+      if (w.visionIcon) {
+        const visPrev = document.createElement('img');
+        visPrev.className = 'hrg-thumb-preview';
+        visPrev.alt = '';
+        visPrev.src = w.visionIcon;
+        mvSec.appendChild(visPrev);
+      }
+      const visAltLab = document.createElement('label');
+      visAltLab.textContent = 'Vision icon alt';
+      const visAltIn = document.createElement('input');
+      visAltIn.type = 'text';
+      visAltIn.dataset.wcVisionIconAlt = '1';
+      visAltIn.value = w.visionIconAlt || '';
+      mvSec.appendChild(visAltLab);
+      mvSec.appendChild(visAltIn);
+      const visPickRow = document.createElement('div');
+      visPickRow.className = 'row';
+      const visPickLabel = document.createElement('label');
+      visPickLabel.className = 'pick-label';
+      visPickLabel.appendChild(document.createTextNode('Upload vision icon…'));
+      const visFileInput = document.createElement('input');
+      visFileInput.type = 'file';
+      visFileInput.accept = 'image/*';
+      visFileInput.dataset.wcVisionUpload = '1';
+      visPickLabel.appendChild(visFileInput);
+      visPickRow.appendChild(visPickLabel);
+      mvSec.appendChild(visPickRow);
+      root.appendChild(mvSec);
+    }
+
+    function onWhyChooseInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) && !(t instanceof HTMLTextAreaElement)) return;
+      ensureWhyChooseSection();
+      const w = site.whyChooseSection;
+      if (t.dataset.wcHeading != null) {
+        w.heading = t.value;
+        return;
+      }
+      if (t.dataset.wcFeatureTitle != null) {
+        w.features[+t.dataset.wcFeatureTitle].title = t.value;
+        return;
+      }
+      if (t.dataset.wcFeatureDesc != null) {
+        w.features[+t.dataset.wcFeatureDesc].description = t.value;
+        return;
+      }
+      if (t.dataset.wcStatValue != null) {
+        w.stats[+t.dataset.wcStatValue].value = t.value;
+        return;
+      }
+      if (t.dataset.wcStatLabel != null) {
+        w.stats[+t.dataset.wcStatLabel].label = t.value;
+        return;
+      }
+      if (t.dataset.wcStatLabel2 != null) {
+        w.stats[+t.dataset.wcStatLabel2].labelLine2 = t.value;
+        return;
+      }
+      if (t.dataset.wcMissionTitle != null) {
+        w.mission.title = t.value;
+        return;
+      }
+      if (t.dataset.wcMissionBody != null) {
+        w.mission.body = t.value;
+        return;
+      }
+      if (t.dataset.wcVisionTitle != null) {
+        w.vision.title = t.value;
+        return;
+      }
+      if (t.dataset.wcVisionBody != null) {
+        w.vision.body = t.value;
+        return;
+      }
+      if (t.dataset.wcMissionImage != null) {
+        w.missionImage = t.value;
+        return;
+      }
+      if (t.dataset.wcMissionImageAlt != null) {
+        w.missionImageAlt = t.value;
+        return;
+      }
+      if (t.dataset.wcVisionIcon != null) {
+        w.visionIcon = t.value;
+        return;
+      }
+      if (t.dataset.wcVisionIconAlt != null) {
+        w.visionIconAlt = t.value;
+      }
+    }
+
+    async function uploadWhyChooseMissionImage(file) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureWhyChooseSection();
+      site.whyChooseSection.missionImage = data.url;
+      renderWhyChooseSection();
+      showMsg('Mission photo uploaded — remember to Save changes.', 'ok');
+    }
+
+    async function uploadWhyChooseVisionIcon(file) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?logo=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureWhyChooseSection();
+      site.whyChooseSection.visionIcon = data.url;
+      renderWhyChooseSection();
+      showMsg('Vision icon uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onWhyChooseFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (!f) return;
+      if (t.dataset.wcMissionUpload != null) {
+        uploadWhyChooseMissionImage(f);
+        return;
+      }
+      if (t.dataset.wcVisionUpload != null) {
+        uploadWhyChooseVisionIcon(f);
+      }
+    }
+
+    function buildWhyChoosePayload() {
+      ensureWhyChooseSection();
+      const w = site.whyChooseSection;
+      const heading = (w.heading || '').trim();
+      if (!heading) throw new Error('Why Choose section needs a heading.');
+      const features = w.features.map((f, i) => {
+        const title = (f.title || '').trim();
+        const description = (f.description || '').trim();
+        if (!title) throw new Error('Feature card ' + (i + 1) + ' needs a title.');
+        if (!description) throw new Error('Feature card ' + (i + 1) + ' needs a description.');
+        return { title, description };
+      });
+      const stats = w.stats.map((s, i) => {
+        const value = (s.value || '').trim();
+        const label = (s.label || '').trim();
+        if (!value) throw new Error('Stat card ' + (i + 1) + ' needs a value.');
+        if (!label) throw new Error('Stat card ' + (i + 1) + ' needs label line 1.');
+        const o = { value, label };
+        const l2 = (s.labelLine2 || '').trim();
+        if (l2) o.labelLine2 = l2;
+        return o;
+      });
+      const missionTitle = (w.mission.title || '').trim();
+      const missionBody = (w.mission.body || '').trim();
+      const visionTitle = (w.vision.title || '').trim();
+      const visionBody = (w.vision.body || '').trim();
+      const missionImage = (w.missionImage || '').trim();
+      const visionIcon = (w.visionIcon || '').trim();
+      if (!missionTitle || !missionBody) throw new Error('Mission needs a title and body.');
+      if (!visionTitle || !visionBody) throw new Error('Vision needs a title and body.');
+      if (!missionImage) throw new Error('Mission photo needs a URL or upload.');
+      if (!visionIcon) throw new Error('Vision icon needs a URL or upload.');
+      const out = {
+        heading,
+        features,
+        stats,
+        mission: { title: missionTitle, body: missionBody },
+        missionImage,
+        vision: { title: visionTitle, body: visionBody },
+        visionIcon,
+      };
+      const alt = (w.missionImageAlt || '').trim();
+      if (alt) out.missionImageAlt = alt;
+      const visAlt = (w.visionIconAlt || '').trim();
+      if (visAlt) out.visionIconAlt = visAlt;
+      return out;
+    }
+
+    const BT_SLOT_COUNT = 5;
+    const BT_DEFAULTS = {
+      heading: 'Building Trust in Gold',
+      slots: [
+        { image: '/images/hero-slide-whatsapp-03.png', alt: 'Gold production' },
+        { image: '/images/product-gold-weighed.png', alt: 'Gold weighed' },
+        { image: '/images/location-dubai-refinery.png', alt: 'Dubai refinery' },
+        { image: '/images/product-gold-pellets.png', alt: 'Gold pellets' },
+        { image: '/images/management-gallery-4.png', alt: 'JD Gold operations' },
+      ],
+    };
+
+    function ensureBuildingTrustSection() {
+      const base = BT_DEFAULTS;
+      if (!site || !site.buildingTrustSection || typeof site.buildingTrustSection !== 'object') {
+        if (site) site.buildingTrustSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const b = site.buildingTrustSection;
+      b.heading =
+        typeof b.heading === 'string' && b.heading.trim()
+          ? b.heading.trim()
+          : base.heading;
+      let slots = Array.isArray(b.slots) ? b.slots.slice(0, BT_SLOT_COUNT) : [];
+      while (slots.length < BT_SLOT_COUNT) {
+        slots.push({ ...base.slots[slots.length] });
+      }
+      b.slots = slots.map((s, i) => ({
+        image: (s.image || '').trim() || base.slots[i].image,
+        alt: (s.alt || '').trim() || base.slots[i].alt,
+      }));
+    }
+
+    function renderBuildingTrustSection() {
+      if (!site) return;
+      ensureBuildingTrustSection();
+      const root = el('buildingTrustRoot');
+      if (!root) return;
+      root.textContent = '';
+      const b = site.buildingTrustSection;
+      const headLab = document.createElement('label');
+      headLab.textContent = 'Section heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.btHeading = '1';
+      headIn.value = b.heading || '';
+      root.appendChild(headLab);
+      root.appendChild(headIn);
+      const slotsRow = document.createElement('div');
+      slotsRow.className = 'bt-slots-row';
+      for (let i = 0; i < BT_SLOT_COUNT; i++) {
+        const slot = b.slots[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Image ' + (i + 1);
+        wrap.appendChild(sub);
+        const imgLab = document.createElement('label');
+        imgLab.textContent = 'Image URL';
+        const imgIn = document.createElement('input');
+        imgIn.type = 'text';
+        imgIn.placeholder = '/uploads/cms/… or /images/…';
+        imgIn.dataset.btImage = String(i);
+        imgIn.value = (slot && slot.image) || '';
+        wrap.appendChild(imgLab);
+        wrap.appendChild(imgIn);
+        if (slot && slot.image) {
+          const prev = document.createElement('img');
+          prev.className = 'hrg-thumb-preview';
+          prev.alt = '';
+          prev.src = slot.image;
+          wrap.appendChild(prev);
+        }
+        const altLab = document.createElement('label');
+        altLab.textContent = 'Alt text (optional)';
+        const altIn = document.createElement('input');
+        altIn.type = 'text';
+        altIn.dataset.btAlt = String(i);
+        altIn.value = (slot && slot.alt) || '';
+        wrap.appendChild(altLab);
+        wrap.appendChild(altIn);
+        const pickRow = document.createElement('div');
+        pickRow.className = 'row';
+        pickRow.style.marginTop = '0.35rem';
+        const pickLabel = document.createElement('label');
+        pickLabel.className = 'pick-label';
+        pickLabel.appendChild(document.createTextNode('Upload image…'));
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.dataset.btUpload = String(i);
+        pickLabel.appendChild(fileInput);
+        pickRow.appendChild(pickLabel);
+        wrap.appendChild(pickRow);
+        slotsRow.appendChild(wrap);
+      }
+      root.appendChild(slotsRow);
+    }
+
+    function onBuildingTrustInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type === 'file') return;
+      ensureBuildingTrustSection();
+      const b = site.buildingTrustSection;
+      if (t.dataset.btHeading != null) {
+        b.heading = t.value;
+        return;
+      }
+      const slotIdx = t.dataset.btImage;
+      if (slotIdx != null) {
+        b.slots[+slotIdx].image = t.value;
+        return;
+      }
+      const altIdx = t.dataset.btAlt;
+      if (altIdx != null) {
+        b.slots[+altIdx].alt = t.value;
+      }
+    }
+
+    async function uploadBuildingTrustImage(file, slotIndex) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureBuildingTrustSection();
+      site.buildingTrustSection.slots[slotIndex].image = data.url;
+      renderBuildingTrustSection();
+      showMsg('Image ' + (slotIndex + 1) + ' uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onBuildingTrustFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      if (t.dataset.btUpload == null) return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (f) uploadBuildingTrustImage(f, +t.dataset.btUpload);
+    }
+
+    function buildBuildingTrustPayload() {
+      ensureBuildingTrustSection();
+      const b = site.buildingTrustSection;
+      const heading = (b.heading || '').trim();
+      if (!heading) throw new Error('Building Trust section needs a heading.');
+      const slots = b.slots.map((s, i) => {
+        const image = (s.image || '').trim();
+        if (!image) throw new Error('Building Trust image ' + (i + 1) + ' needs a URL or upload.');
+        const o = { image };
+        const alt = (s.alt || '').trim();
+        if (alt) o.alt = alt;
+        return o;
+      });
+      return { heading, slots };
+    }
+
+    const GP_PRODUCT_COUNT = 6;
+    const GP_DEFAULTS = {
+      heading: 'Our Gold Products',
+      products: [
+        {
+          label: 'Gold Bars (999.9)',
+          image: '/images/product-investment-grade-bar.png',
+          imageAlt: 'Gold bars 999.9',
+        },
+        {
+          label: 'Gold Bullion',
+          image: '/images/management-collage-01.png',
+          imageAlt: 'Gold bullion',
+        },
+        {
+          label: 'Gold Nuggets',
+          image: '/images/management-collage-02.png',
+          imageAlt: 'Gold nuggets',
+        },
+        {
+          label: 'Gold Granules',
+          image: '/images/hero-slide-whatsapp-04.png',
+          imageAlt: 'Gold granules',
+        },
+        {
+          label: 'Gold Dust',
+          image: '/images/product-refined-nuggets.png',
+          imageAlt: 'Gold dust',
+        },
+        {
+          label: 'Gold Bars (999.9)',
+          image: '/images/product-investment-grade-bar.png',
+          imageAlt: 'Gold bars 999.9',
+        },
+      ],
+    };
+
+    function ensureGoldProductsSection() {
+      const base = GP_DEFAULTS;
+      if (!site || !site.goldProductsSection || typeof site.goldProductsSection !== 'object') {
+        if (site) site.goldProductsSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const g = site.goldProductsSection;
+      g.heading =
+        typeof g.heading === 'string' && g.heading.trim()
+          ? g.heading.trim()
+          : base.heading;
+      let products = Array.isArray(g.products) ? g.products.slice(0, GP_PRODUCT_COUNT) : [];
+      while (products.length < GP_PRODUCT_COUNT) {
+        products.push({ ...base.products[products.length] });
+      }
+      g.products = products.map((p, i) => ({
+        label: (p.label || '').trim() || base.products[i].label,
+        image: (p.image || '').trim() || base.products[i].image,
+        imageAlt: (p.imageAlt || '').trim() || base.products[i].imageAlt,
+      }));
+    }
+
+    function renderGoldProductsSection() {
+      if (!site) return;
+      ensureGoldProductsSection();
+      const root = el('goldProductsRoot');
+      if (!root) return;
+      root.textContent = '';
+      const g = site.goldProductsSection;
+      const headLab = document.createElement('label');
+      headLab.textContent = 'Section heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.gpHeading = '1';
+      headIn.value = g.heading || '';
+      root.appendChild(headLab);
+      root.appendChild(headIn);
+      const slotsRow = document.createElement('div');
+      slotsRow.className = 'gp-slots-row';
+      for (let i = 0; i < GP_PRODUCT_COUNT; i++) {
+        const p = g.products[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Product ' + (i + 1);
+        wrap.appendChild(sub);
+        const labelLab = document.createElement('label');
+        labelLab.textContent = 'Label';
+        const labelIn = document.createElement('input');
+        labelIn.type = 'text';
+        labelIn.dataset.gpLabel = String(i);
+        labelIn.value = (p && p.label) || '';
+        wrap.appendChild(labelLab);
+        wrap.appendChild(labelIn);
+        const imgLab = document.createElement('label');
+        imgLab.textContent = 'Image URL';
+        const imgIn = document.createElement('input');
+        imgIn.type = 'text';
+        imgIn.placeholder = '/uploads/cms/… or /images/…';
+        imgIn.dataset.gpImage = String(i);
+        imgIn.value = (p && p.image) || '';
+        wrap.appendChild(imgLab);
+        wrap.appendChild(imgIn);
+        if (p && p.image) {
+          const prev = document.createElement('img');
+          prev.className = 'hrg-thumb-preview';
+          prev.alt = '';
+          prev.src = p.image;
+          wrap.appendChild(prev);
+        }
+        const altLab = document.createElement('label');
+        altLab.textContent = 'Image alt (optional)';
+        const altIn = document.createElement('input');
+        altIn.type = 'text';
+        altIn.dataset.gpAlt = String(i);
+        altIn.value = (p && p.imageAlt) || '';
+        wrap.appendChild(altLab);
+        wrap.appendChild(altIn);
+        const pickRow = document.createElement('div');
+        pickRow.className = 'row';
+        pickRow.style.marginTop = '0.35rem';
+        const pickLabel = document.createElement('label');
+        pickLabel.className = 'pick-label';
+        pickLabel.appendChild(document.createTextNode('Upload image…'));
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.dataset.gpUpload = String(i);
+        pickLabel.appendChild(fileInput);
+        pickRow.appendChild(pickLabel);
+        wrap.appendChild(pickRow);
+        slotsRow.appendChild(wrap);
+      }
+      root.appendChild(slotsRow);
+    }
+
+    function onGoldProductsInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type === 'file') return;
+      ensureGoldProductsSection();
+      const g = site.goldProductsSection;
+      if (t.dataset.gpHeading != null) {
+        g.heading = t.value;
+        return;
+      }
+      const labelIdx = t.dataset.gpLabel;
+      if (labelIdx != null) {
+        g.products[+labelIdx].label = t.value;
+        return;
+      }
+      const imgIdx = t.dataset.gpImage;
+      if (imgIdx != null) {
+        g.products[+imgIdx].image = t.value;
+        return;
+      }
+      const altIdx = t.dataset.gpAlt;
+      if (altIdx != null) {
+        g.products[+altIdx].imageAlt = t.value;
+      }
+    }
+
+    async function uploadGoldProductImage(file, productIndex) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureGoldProductsSection();
+      site.goldProductsSection.products[productIndex].image = data.url;
+      renderGoldProductsSection();
+      showMsg('Product ' + (productIndex + 1) + ' image uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onGoldProductsFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      if (t.dataset.gpUpload == null) return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (f) uploadGoldProductImage(f, +t.dataset.gpUpload);
+    }
+
+    function buildGoldProductsPayload() {
+      ensureGoldProductsSection();
+      const g = site.goldProductsSection;
+      const heading = (g.heading || '').trim();
+      if (!heading) throw new Error('Our Gold Products section needs a heading.');
+      const products = g.products.map((p, i) => {
+        const label = (p.label || '').trim();
+        const image = (p.image || '').trim();
+        if (!label) throw new Error('Product ' + (i + 1) + ' needs a label.');
+        if (!image) throw new Error('Product ' + (i + 1) + ' needs an image URL or upload.');
+        const o = { label, image };
+        const imageAlt = (p.imageAlt || '').trim();
+        if (imageAlt) o.imageAlt = imageAlt;
+        return o;
+      });
+      return { heading, products };
+    }
+
+    const GRP_STEP_COUNT = 6;
+    const GRP_DEFAULTS = {
+      heading: 'Our Gold Refining Process',
+      steps: [
+        { step: '01', title: 'Raw Material', image: '/images/management-collage-02.png', imageAlt: 'Raw material' },
+        { step: '02', title: 'Melting', image: '/images/hero-slide-whatsapp-03.png', imageAlt: 'Melting' },
+        { step: '03', title: 'Refining', image: '/images/management-gallery-4.png', imageAlt: 'Refining' },
+        { step: '04', title: 'Casting', image: '/images/hero-slide-whatsapp-04.png', imageAlt: 'Casting' },
+        { step: '05', title: 'Quality Check', image: '/images/product-gold-weighed.png', imageAlt: 'Quality check' },
+        { step: '06', title: 'Packaging', image: '/images/hero-slide-gold-bar-hand.png', imageAlt: 'Packaging' },
+      ],
+    };
+
+    function ensureGoldRefiningProcessSection() {
+      const base = GRP_DEFAULTS;
+      if (!site || !site.goldRefiningProcessSection || typeof site.goldRefiningProcessSection !== 'object') {
+        if (site) site.goldRefiningProcessSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const g = site.goldRefiningProcessSection;
+      g.heading =
+        typeof g.heading === 'string' && g.heading.trim()
+          ? g.heading.trim()
+          : base.heading;
+      let steps = Array.isArray(g.steps) ? g.steps.slice(0, GRP_STEP_COUNT) : [];
+      while (steps.length < GRP_STEP_COUNT) {
+        steps.push({ ...base.steps[steps.length] });
+      }
+      g.steps = steps.map((s, i) => ({
+        step: (s.step || '').trim() || base.steps[i].step,
+        title: (s.title || '').trim() || base.steps[i].title,
+        image: (s.image || '').trim() || base.steps[i].image,
+        imageAlt: (s.imageAlt || '').trim() || base.steps[i].imageAlt,
+      }));
+    }
+
+    function renderGoldRefiningProcessSection() {
+      if (!site) return;
+      ensureGoldRefiningProcessSection();
+      const root = el('goldRefiningRoot');
+      if (!root) return;
+      root.textContent = '';
+      const g = site.goldRefiningProcessSection;
+      const headLab = document.createElement('label');
+      headLab.textContent = 'Section heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.grpHeading = '1';
+      headIn.value = g.heading || '';
+      root.appendChild(headLab);
+      root.appendChild(headIn);
+      const stepsRow = document.createElement('div');
+      stepsRow.className = 'grp-slots-row';
+      for (let i = 0; i < GRP_STEP_COUNT; i++) {
+        const s = g.steps[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Step ' + (i + 1);
+        wrap.appendChild(sub);
+        const stepLab = document.createElement('label');
+        stepLab.textContent = 'Step number';
+        const stepIn = document.createElement('input');
+        stepIn.type = 'text';
+        stepIn.placeholder = '01';
+        stepIn.dataset.grpStep = String(i);
+        stepIn.value = (s && s.step) || '';
+        wrap.appendChild(stepLab);
+        wrap.appendChild(stepIn);
+        const titleLab = document.createElement('label');
+        titleLab.textContent = 'Title';
+        const titleIn = document.createElement('input');
+        titleIn.type = 'text';
+        titleIn.dataset.grpTitle = String(i);
+        titleIn.value = (s && s.title) || '';
+        wrap.appendChild(titleLab);
+        wrap.appendChild(titleIn);
+        const imgLab = document.createElement('label');
+        imgLab.textContent = 'Background image URL';
+        const imgIn = document.createElement('input');
+        imgIn.type = 'text';
+        imgIn.placeholder = '/uploads/cms/… or /images/…';
+        imgIn.dataset.grpImage = String(i);
+        imgIn.value = (s && s.image) || '';
+        wrap.appendChild(imgLab);
+        wrap.appendChild(imgIn);
+        if (s && s.image) {
+          const prev = document.createElement('img');
+          prev.className = 'hrg-thumb-preview';
+          prev.alt = '';
+          prev.src = s.image;
+          wrap.appendChild(prev);
+        }
+        const altLab = document.createElement('label');
+        altLab.textContent = 'Image alt (optional)';
+        const altIn = document.createElement('input');
+        altIn.type = 'text';
+        altIn.dataset.grpAlt = String(i);
+        altIn.value = (s && s.imageAlt) || '';
+        wrap.appendChild(altLab);
+        wrap.appendChild(altIn);
+        const pickRow = document.createElement('div');
+        pickRow.className = 'row';
+        pickRow.style.marginTop = '0.35rem';
+        const pickLabel = document.createElement('label');
+        pickLabel.className = 'pick-label';
+        pickLabel.appendChild(document.createTextNode('Upload image…'));
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.dataset.grpUpload = String(i);
+        pickLabel.appendChild(fileInput);
+        pickRow.appendChild(pickLabel);
+        wrap.appendChild(pickRow);
+        stepsRow.appendChild(wrap);
+      }
+      root.appendChild(stepsRow);
+    }
+
+    function onGoldRefiningInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type === 'file') return;
+      ensureGoldRefiningProcessSection();
+      const g = site.goldRefiningProcessSection;
+      if (t.dataset.grpHeading != null) {
+        g.heading = t.value;
+        return;
+      }
+      const stepIdx = t.dataset.grpStep;
+      if (stepIdx != null) {
+        g.steps[+stepIdx].step = t.value;
+        return;
+      }
+      const titleIdx = t.dataset.grpTitle;
+      if (titleIdx != null) {
+        g.steps[+titleIdx].title = t.value;
+        return;
+      }
+      const imgIdx = t.dataset.grpImage;
+      if (imgIdx != null) {
+        g.steps[+imgIdx].image = t.value;
+        return;
+      }
+      const altIdx = t.dataset.grpAlt;
+      if (altIdx != null) {
+        g.steps[+altIdx].imageAlt = t.value;
+      }
+    }
+
+    async function uploadGoldRefiningStepImage(file, stepIndex) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureGoldRefiningProcessSection();
+      site.goldRefiningProcessSection.steps[stepIndex].image = data.url;
+      renderGoldRefiningProcessSection();
+      showMsg('Step ' + (stepIndex + 1) + ' image uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onGoldRefiningFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      if (t.dataset.grpUpload == null) return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (f) uploadGoldRefiningStepImage(f, +t.dataset.grpUpload);
+    }
+
+    function buildGoldRefiningProcessPayload() {
+      ensureGoldRefiningProcessSection();
+      const g = site.goldRefiningProcessSection;
+      const heading = (g.heading || '').trim();
+      if (!heading) throw new Error('Gold Refining Process section needs a heading.');
+      const steps = g.steps.map((s, i) => {
+        const step = (s.step || '').trim();
+        const title = (s.title || '').trim();
+        const image = (s.image || '').trim();
+        if (!step) throw new Error('Refining step ' + (i + 1) + ' needs a step number.');
+        if (!title) throw new Error('Refining step ' + (i + 1) + ' needs a title.');
+        if (!image) throw new Error('Refining step ' + (i + 1) + ' needs an image URL or upload.');
+        const o = { step, title, image };
+        const imageAlt = (s.imageAlt || '').trim();
+        if (imageAlt) o.imageAlt = imageAlt;
+        return o;
+      });
+      return { heading, steps };
+    }
+
+    const RG_SLOT_COUNT = 3;
+    const RG_DEFAULTS = {
+      slots: [
+        { image: '/images/management-gallery-6.png', alt: 'Refining gallery 1' },
+        { image: '/images/management-gallery-7.png', alt: 'Refining gallery 2' },
+        { image: '/images/management-gallery-8.png', alt: 'Refining gallery 3' },
+      ],
+    };
+
+    function ensureRefiningGallerySection() {
+      const base = RG_DEFAULTS;
+      if (!site || !site.refiningGallerySection || typeof site.refiningGallerySection !== 'object') {
+        if (site) site.refiningGallerySection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const r = site.refiningGallerySection;
+      let slots = Array.isArray(r.slots) ? r.slots.slice(0, RG_SLOT_COUNT) : [];
+      while (slots.length < RG_SLOT_COUNT) {
+        slots.push({ ...base.slots[slots.length] });
+      }
+      r.slots = slots.map((s, i) => ({
+        image: (s.image || '').trim() || base.slots[i].image,
+        alt: (s.alt || '').trim() || base.slots[i].alt,
+      }));
+    }
+
+    function renderRefiningGallerySection() {
+      if (!site) return;
+      ensureRefiningGallerySection();
+      const root = el('refiningGalleryRoot');
+      if (!root) return;
+      root.textContent = '';
+      const r = site.refiningGallerySection;
+      const slotsRow = document.createElement('div');
+      slotsRow.className = 'rg-slots-row';
+      for (let i = 0; i < RG_SLOT_COUNT; i++) {
+        const slot = r.slots[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Image ' + (i + 1);
+        wrap.appendChild(sub);
+        const imgLab = document.createElement('label');
+        imgLab.textContent = 'Image URL';
+        const imgIn = document.createElement('input');
+        imgIn.type = 'text';
+        imgIn.placeholder = '/uploads/cms/… or /images/…';
+        imgIn.dataset.rgImage = String(i);
+        imgIn.value = (slot && slot.image) || '';
+        wrap.appendChild(imgLab);
+        wrap.appendChild(imgIn);
+        if (slot && slot.image) {
+          const prev = document.createElement('img');
+          prev.className = 'hrg-thumb-preview';
+          prev.alt = '';
+          prev.src = slot.image;
+          wrap.appendChild(prev);
+        }
+        const altLab = document.createElement('label');
+        altLab.textContent = 'Alt text (optional)';
+        const altIn = document.createElement('input');
+        altIn.type = 'text';
+        altIn.dataset.rgAlt = String(i);
+        altIn.value = (slot && slot.alt) || '';
+        wrap.appendChild(altLab);
+        wrap.appendChild(altIn);
+        const pickRow = document.createElement('div');
+        pickRow.className = 'row';
+        pickRow.style.marginTop = '0.35rem';
+        const pickLabel = document.createElement('label');
+        pickLabel.className = 'pick-label';
+        pickLabel.appendChild(document.createTextNode('Upload image…'));
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.dataset.rgUpload = String(i);
+        pickLabel.appendChild(fileInput);
+        pickRow.appendChild(pickLabel);
+        wrap.appendChild(pickRow);
+        slotsRow.appendChild(wrap);
+      }
+      root.appendChild(slotsRow);
+    }
+
+    function onRefiningGalleryInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type === 'file') return;
+      ensureRefiningGallerySection();
+      const r = site.refiningGallerySection;
+      const imgIdx = t.dataset.rgImage;
+      if (imgIdx != null) {
+        r.slots[+imgIdx].image = t.value;
+        return;
+      }
+      const altIdx = t.dataset.rgAlt;
+      if (altIdx != null) {
+        r.slots[+altIdx].alt = t.value;
+      }
+    }
+
+    async function uploadRefiningGalleryImage(file, slotIndex) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureRefiningGallerySection();
+      site.refiningGallerySection.slots[slotIndex].image = data.url;
+      renderRefiningGallerySection();
+      showMsg('Gallery image ' + (slotIndex + 1) + ' uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onRefiningGalleryFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      if (t.dataset.rgUpload == null) return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (f) uploadRefiningGalleryImage(f, +t.dataset.rgUpload);
+    }
+
+    function buildRefiningGalleryPayload() {
+      ensureRefiningGallerySection();
+      const r = site.refiningGallerySection;
+      const slots = r.slots.map((s, i) => {
+        const image = (s.image || '').trim();
+        if (!image) throw new Error('Refining gallery image ' + (i + 1) + ' needs a URL or upload.');
+        const o = { image };
+        const alt = (s.alt || '').trim();
+        if (alt) o.alt = alt;
+        return o;
+      });
+      return { slots };
+    }
+
+    const IWS_INDUSTRY_COUNT = 6;
+    const IWS_DEFAULTS = {
+      heading: 'Industries We Serve',
+      leftImage: '/images/management-gallery-9.png',
+      leftImageAlt: 'Industries we serve',
+      rightImage: '/images/management-gallery-10.png',
+      rightImageAlt: 'Industries we serve',
+      industries: [
+        { label: 'Jewelry & Fashion' },
+        { label: 'Banking & Financial Institutions' },
+        { label: 'Electronics Industry' },
+        { label: 'Government & Defense' },
+        { label: 'Commerce & Traders' },
+        { label: 'Global Gold Market' },
+      ],
+    };
+
+    function ensureIndustriesWeServeSection() {
+      const base = IWS_DEFAULTS;
+      if (!site || !site.industriesWeServeSection || typeof site.industriesWeServeSection !== 'object') {
+        if (site) site.industriesWeServeSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const s = site.industriesWeServeSection;
+      s.heading =
+        typeof s.heading === 'string' && s.heading.trim() ? s.heading.trim() : base.heading;
+      s.leftImage =
+        typeof s.leftImage === 'string' && s.leftImage.trim() ? s.leftImage.trim() : base.leftImage;
+      s.leftImageAlt = (s.leftImageAlt || '').trim() || base.leftImageAlt;
+      s.rightImage =
+        typeof s.rightImage === 'string' && s.rightImage.trim()
+          ? s.rightImage.trim()
+          : base.rightImage;
+      s.rightImageAlt = (s.rightImageAlt || '').trim() || base.rightImageAlt;
+      let industries = Array.isArray(s.industries) ? s.industries.slice(0, IWS_INDUSTRY_COUNT) : [];
+      while (industries.length < IWS_INDUSTRY_COUNT) {
+        industries.push({ ...base.industries[industries.length] });
+      }
+      s.industries = industries.map((item, i) => ({
+        label: (item.label || '').trim() || base.industries[i].label,
+      }));
+    }
+
+    function appendSideImageSlot(root, title, imageKey, altKey, imageVal, altVal, uploadKey) {
+      const wrap = document.createElement('div');
+      wrap.className = 'hrg-slot';
+      const sub = document.createElement('h4');
+      sub.textContent = title;
+      wrap.appendChild(sub);
+      const imgLab = document.createElement('label');
+      imgLab.textContent = 'Image URL';
+      const imgIn = document.createElement('input');
+      imgIn.type = 'text';
+      imgIn.placeholder = '/uploads/cms/… or /images/…';
+      imgIn.dataset[imageKey] = '1';
+      imgIn.value = imageVal || '';
+      wrap.appendChild(imgLab);
+      wrap.appendChild(imgIn);
+      if (imageVal) {
+        const prev = document.createElement('img');
+        prev.className = 'hrg-thumb-preview';
+        prev.alt = '';
+        prev.src = imageVal;
+        wrap.appendChild(prev);
+      }
+      const altLab = document.createElement('label');
+      altLab.textContent = 'Alt text (optional)';
+      const altIn = document.createElement('input');
+      altIn.type = 'text';
+      altIn.dataset[altKey] = '1';
+      altIn.value = altVal || '';
+      wrap.appendChild(altLab);
+      wrap.appendChild(altIn);
+      const pickRow = document.createElement('div');
+      pickRow.className = 'row';
+      pickRow.style.marginTop = '0.35rem';
+      const pickLabel = document.createElement('label');
+      pickLabel.className = 'pick-label';
+      pickLabel.appendChild(document.createTextNode('Upload image…'));
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.dataset[uploadKey] = '1';
+      pickLabel.appendChild(fileInput);
+      pickRow.appendChild(pickLabel);
+      wrap.appendChild(pickRow);
+      root.appendChild(wrap);
+    }
+
+    function renderIndustriesWeServeSection() {
+      if (!site) return;
+      ensureIndustriesWeServeSection();
+      const root = el('industriesServeRoot');
+      if (!root) return;
+      root.textContent = '';
+      const s = site.industriesWeServeSection;
+      const headLab = document.createElement('label');
+      headLab.textContent = 'Section heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.iwsHeading = '1';
+      headIn.value = s.heading || '';
+      root.appendChild(headLab);
+      root.appendChild(headIn);
+      const sideRow = document.createElement('div');
+      sideRow.className = 'iws-side-row';
+      appendSideImageSlot(
+        sideRow,
+        'Left photo',
+        'iwsLeftImage',
+        'iwsLeftAlt',
+        s.leftImage,
+        s.leftImageAlt,
+        'iwsLeftUpload',
+      );
+      appendSideImageSlot(
+        sideRow,
+        'Right photo',
+        'iwsRightImage',
+        'iwsRightAlt',
+        s.rightImage,
+        s.rightImageAlt,
+        'iwsRightUpload',
+      );
+      root.appendChild(sideRow);
+      const indLab = document.createElement('p');
+      indLab.className = 'hint';
+      indLab.style.marginTop = '0.75rem';
+      indLab.textContent = 'Industry labels (center grid, 3×2)';
+      root.appendChild(indLab);
+      const indRow = document.createElement('div');
+      indRow.className = 'iws-slots-row';
+      for (let i = 0; i < IWS_INDUSTRY_COUNT; i++) {
+        const item = s.industries[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Industry ' + (i + 1);
+        wrap.appendChild(sub);
+        const labelLab = document.createElement('label');
+        labelLab.textContent = 'Label';
+        const labelIn = document.createElement('input');
+        labelIn.type = 'text';
+        labelIn.dataset.iwsLabel = String(i);
+        labelIn.value = (item && item.label) || '';
+        wrap.appendChild(labelLab);
+        wrap.appendChild(labelIn);
+        indRow.appendChild(wrap);
+      }
+      root.appendChild(indRow);
+    }
+
+    function onIndustriesWeServeInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type === 'file') return;
+      ensureIndustriesWeServeSection();
+      const s = site.industriesWeServeSection;
+      if (t.dataset.iwsHeading != null) {
+        s.heading = t.value;
+        return;
+      }
+      if (t.dataset.iwsLeftImage != null) {
+        s.leftImage = t.value;
+        return;
+      }
+      if (t.dataset.iwsLeftAlt != null) {
+        s.leftImageAlt = t.value;
+        return;
+      }
+      if (t.dataset.iwsRightImage != null) {
+        s.rightImage = t.value;
+        return;
+      }
+      if (t.dataset.iwsRightAlt != null) {
+        s.rightImageAlt = t.value;
+        return;
+      }
+      const labelIdx = t.dataset.iwsLabel;
+      if (labelIdx != null) {
+        s.industries[+labelIdx].label = t.value;
+      }
+    }
+
+    async function uploadIndustriesWeServeSideImage(file, side) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureIndustriesWeServeSection();
+      if (side === 'left') site.industriesWeServeSection.leftImage = data.url;
+      else site.industriesWeServeSection.rightImage = data.url;
+      renderIndustriesWeServeSection();
+      showMsg(
+        (side === 'left' ? 'Left' : 'Right') + ' photo uploaded — remember to Save changes.',
+        'ok',
+      );
+    }
+
+    function onIndustriesWeServeFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (!f) return;
+      if (t.dataset.iwsLeftUpload != null) uploadIndustriesWeServeSideImage(f, 'left');
+      if (t.dataset.iwsRightUpload != null) uploadIndustriesWeServeSideImage(f, 'right');
+    }
+
+    function buildIndustriesWeServePayload() {
+      ensureIndustriesWeServeSection();
+      const s = site.industriesWeServeSection;
+      const heading = (s.heading || '').trim();
+      if (!heading) throw new Error('Industries We Serve section needs a heading.');
+      const leftImage = (s.leftImage || '').trim();
+      if (!leftImage) throw new Error('Industries We Serve needs a left photo URL or upload.');
+      const rightImage = (s.rightImage || '').trim();
+      if (!rightImage) throw new Error('Industries We Serve needs a right photo URL or upload.');
+      const out = { heading, leftImage, rightImage };
+      const leftImageAlt = (s.leftImageAlt || '').trim();
+      if (leftImageAlt) out.leftImageAlt = leftImageAlt;
+      const rightImageAlt = (s.rightImageAlt || '').trim();
+      if (rightImageAlt) out.rightImageAlt = rightImageAlt;
+      out.industries = s.industries.map((item, i) => {
+        const label = (item.label || '').trim();
+        if (!label) throw new Error('Industry ' + (i + 1) + ' needs a label.');
+        return { label };
+      });
+      return out;
+    }
+
+    const ME_SLOT_COUNT = 5;
+    const ME_DEFAULTS = {
+      heading: 'Mining & Extraction',
+      slots: [
+        { image: '/images/hero-slide-whatsapp-03.png', alt: 'Mining operations' },
+        { image: '/images/product-gold-weighed.png', alt: 'Gold weighed' },
+        { image: '/images/location-dubai-refinery.png', alt: 'Dubai refinery' },
+        { image: '/images/product-gold-pellets.png', alt: 'Gold pellets' },
+        { image: '/images/management-gallery-4.png', alt: 'Extraction process' },
+      ],
+    };
+
+    function ensureMiningExtractionSection() {
+      const base = ME_DEFAULTS;
+      if (!site || !site.miningExtractionSection || typeof site.miningExtractionSection !== 'object') {
+        if (site) site.miningExtractionSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const m = site.miningExtractionSection;
+      m.heading =
+        typeof m.heading === 'string' && m.heading.trim() ? m.heading.trim() : base.heading;
+      let slots = Array.isArray(m.slots) ? m.slots.slice(0, ME_SLOT_COUNT) : [];
+      while (slots.length < ME_SLOT_COUNT) {
+        slots.push({ ...base.slots[slots.length] });
+      }
+      m.slots = slots.map((s, i) => ({
+        image: (s.image || '').trim() || base.slots[i].image,
+        alt: (s.alt || '').trim() || base.slots[i].alt,
+      }));
+    }
+
+    function renderMiningExtractionSection() {
+      if (!site) return;
+      ensureMiningExtractionSection();
+      const root = el('miningExtractionRoot');
+      if (!root) return;
+      root.textContent = '';
+      const m = site.miningExtractionSection;
+      const headLab = document.createElement('label');
+      headLab.textContent = 'Section heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.meHeading = '1';
+      headIn.value = m.heading || '';
+      root.appendChild(headLab);
+      root.appendChild(headIn);
+      const slotsRow = document.createElement('div');
+      slotsRow.className = 'bt-slots-row';
+      for (let i = 0; i < ME_SLOT_COUNT; i++) {
+        const slot = m.slots[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Image ' + (i + 1);
+        wrap.appendChild(sub);
+        const imgLab = document.createElement('label');
+        imgLab.textContent = 'Image URL';
+        const imgIn = document.createElement('input');
+        imgIn.type = 'text';
+        imgIn.placeholder = '/uploads/cms/… or /images/…';
+        imgIn.dataset.meImage = String(i);
+        imgIn.value = (slot && slot.image) || '';
+        wrap.appendChild(imgLab);
+        wrap.appendChild(imgIn);
+        if (slot && slot.image) {
+          const prev = document.createElement('img');
+          prev.className = 'hrg-thumb-preview';
+          prev.alt = '';
+          prev.src = slot.image;
+          wrap.appendChild(prev);
+        }
+        const altLab = document.createElement('label');
+        altLab.textContent = 'Alt text (optional)';
+        const altIn = document.createElement('input');
+        altIn.type = 'text';
+        altIn.dataset.meAlt = String(i);
+        altIn.value = (slot && slot.alt) || '';
+        wrap.appendChild(altLab);
+        wrap.appendChild(altIn);
+        const pickRow = document.createElement('div');
+        pickRow.className = 'row';
+        pickRow.style.marginTop = '0.35rem';
+        const pickLabel = document.createElement('label');
+        pickLabel.className = 'pick-label';
+        pickLabel.appendChild(document.createTextNode('Upload image…'));
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.dataset.meUpload = String(i);
+        pickLabel.appendChild(fileInput);
+        pickRow.appendChild(pickLabel);
+        wrap.appendChild(pickRow);
+        slotsRow.appendChild(wrap);
+      }
+      root.appendChild(slotsRow);
+    }
+
+    function onMiningExtractionInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type === 'file') return;
+      ensureMiningExtractionSection();
+      const m = site.miningExtractionSection;
+      if (t.dataset.meHeading != null) {
+        m.heading = t.value;
+        return;
+      }
+      const slotIdx = t.dataset.meImage;
+      if (slotIdx != null) {
+        m.slots[+slotIdx].image = t.value;
+        return;
+      }
+      const altIdx = t.dataset.meAlt;
+      if (altIdx != null) {
+        m.slots[+altIdx].alt = t.value;
+      }
+    }
+
+    async function uploadMiningExtractionImage(file, slotIndex) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureMiningExtractionSection();
+      site.miningExtractionSection.slots[slotIndex].image = data.url;
+      renderMiningExtractionSection();
+      showMsg('Image ' + (slotIndex + 1) + ' uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onMiningExtractionFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      if (t.dataset.meUpload == null) return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (f) uploadMiningExtractionImage(f, +t.dataset.meUpload);
+    }
+
+    function buildMiningExtractionPayload() {
+      ensureMiningExtractionSection();
+      const m = site.miningExtractionSection;
+      const heading = (m.heading || '').trim();
+      if (!heading) throw new Error('Mining & Extraction section needs a heading.');
+      const slots = m.slots.map((s, i) => {
+        const image = (s.image || '').trim();
+        if (!image) throw new Error('Mining & Extraction image ' + (i + 1) + ' needs a URL or upload.');
+        const o = { image };
+        const alt = (s.alt || '').trim();
+        if (alt) o.alt = alt;
+        return o;
+      });
+      return { heading, slots };
+    }
+
+    const GS_FEATURE_COUNT = 5;
+    const GS_DEFAULTS = {
+      heading: 'Global Shipping & Secure Delivery',
+      features: [
+        {
+          title: 'Worldwide Shipping',
+          description: 'Serving clients across international markets.',
+        },
+        {
+          title: 'Fully Insured',
+          description: 'All shipments are protected for maximum security.',
+        },
+        {
+          title: 'Secure Packaging',
+          description: 'Tamper-proof and high-security packaging standards.',
+        },
+        {
+          title: 'Real-Time Tracking',
+          description: 'Track shipments with complete transparency.',
+        },
+        {
+          title: 'Timely Delivery',
+          description: 'Fast and reliable logistics solutions.',
+        },
+      ],
+    };
+
+    function ensureGlobalShippingSection() {
+      const base = GS_DEFAULTS;
+      if (!site || !site.globalShippingSection || typeof site.globalShippingSection !== 'object') {
+        if (site) site.globalShippingSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const g = site.globalShippingSection;
+      g.heading =
+        typeof g.heading === 'string' && g.heading.trim() ? g.heading.trim() : base.heading;
+      let features = Array.isArray(g.features) ? g.features.slice(0, GS_FEATURE_COUNT) : [];
+      while (features.length < GS_FEATURE_COUNT) {
+        features.push({ ...base.features[features.length] });
+      }
+      g.features = features.map((f, i) => ({
+        title: (f.title || '').trim() || base.features[i].title,
+        description: (f.description || '').trim() || base.features[i].description,
+      }));
+    }
+
+    function renderGlobalShippingSection() {
+      if (!site) return;
+      ensureGlobalShippingSection();
+      const root = el('globalShippingRoot');
+      if (!root) return;
+      root.textContent = '';
+      const g = site.globalShippingSection;
+      const headLab = document.createElement('label');
+      headLab.textContent = 'Section heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.gsHeading = '1';
+      headIn.value = g.heading || '';
+      root.appendChild(headLab);
+      root.appendChild(headIn);
+      const featRow = document.createElement('div');
+      featRow.className = 'bt-slots-row';
+      for (let i = 0; i < GS_FEATURE_COUNT; i++) {
+        const f = g.features[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Card ' + (i + 1);
+        wrap.appendChild(sub);
+        const titleLab = document.createElement('label');
+        titleLab.textContent = 'Title';
+        const titleIn = document.createElement('input');
+        titleIn.type = 'text';
+        titleIn.dataset.gsTitle = String(i);
+        titleIn.value = (f && f.title) || '';
+        wrap.appendChild(titleLab);
+        wrap.appendChild(titleIn);
+        const descLab = document.createElement('label');
+        descLab.textContent = 'Description';
+        const descIn = document.createElement('textarea');
+        descIn.rows = 3;
+        descIn.dataset.gsDesc = String(i);
+        descIn.value = (f && f.description) || '';
+        wrap.appendChild(descLab);
+        wrap.appendChild(descIn);
+        featRow.appendChild(wrap);
+      }
+      root.appendChild(featRow);
+    }
+
+    function onGlobalShippingInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement)) return;
+      ensureGlobalShippingSection();
+      const g = site.globalShippingSection;
+      if (t.dataset.gsHeading != null) {
+        g.heading = t.value;
+        return;
+      }
+      const titleIdx = t.dataset.gsTitle;
+      if (titleIdx != null) {
+        g.features[+titleIdx].title = t.value;
+        return;
+      }
+      const descIdx = t.dataset.gsDesc;
+      if (descIdx != null) {
+        g.features[+descIdx].description = t.value;
+      }
+    }
+
+    function buildGlobalShippingPayload() {
+      ensureGlobalShippingSection();
+      const g = site.globalShippingSection;
+      const heading = (g.heading || '').trim();
+      if (!heading) throw new Error('Global Shipping section needs a heading.');
+      const features = g.features.map((f, i) => {
+        const title = (f.title || '').trim();
+        const description = (f.description || '').trim();
+        if (!title) throw new Error('Global Shipping card ' + (i + 1) + ' needs a title.');
+        if (!description) throw new Error('Global Shipping card ' + (i + 1) + ' needs a description.');
+        return { title, description };
+      });
+      return { heading, features };
+    }
+
+    const GIT_TOP_COUNT = 3;
+    const GIT_DEFAULTS = {
+      heading: 'Get in Touch',
+      topImages: [
+        { image: '/images/management-gallery-11.png', alt: 'Gallery' },
+        { image: '/images/management-gallery-12.png', alt: 'Gallery' },
+        { image: '/images/license-dubai-ded-commercial-license.png', alt: 'License' },
+      ],
+      leftImage: '/images/license-hong-kong-incorporation.png',
+      leftImageAlt: 'Hong Kong license',
+      rightImage: '/images/license-usa-jd-gold-trading.png',
+      rightImageAlt: 'USA license',
+      phone: '+92 300 1234567',
+      whatsapp: '+86 18340320420',
+      email: 'info@jdgold.com',
+      address: 'Suite #01, Gold Tower, Main Boulevard, Karachi, Pakistan',
+    };
+
+    function ensureGetInTouchSection() {
+      const base = GIT_DEFAULTS;
+      if (!site || !site.getInTouchSection || typeof site.getInTouchSection !== 'object') {
+        if (site) site.getInTouchSection = JSON.parse(JSON.stringify(base));
+        return;
+      }
+      const g = site.getInTouchSection;
+      g.heading =
+        typeof g.heading === 'string' && g.heading.trim() ? g.heading.trim() : base.heading;
+      let topImages = Array.isArray(g.topImages) ? g.topImages.slice(0, GIT_TOP_COUNT) : [];
+      while (topImages.length < GIT_TOP_COUNT) {
+        topImages.push({ ...base.topImages[topImages.length] });
+      }
+      g.topImages = topImages.map((s, i) => ({
+        image: (s.image || '').trim() || base.topImages[i].image,
+        alt: (s.alt || '').trim() || base.topImages[i].alt,
+      }));
+      g.leftImage =
+        typeof g.leftImage === 'string' && g.leftImage.trim() ? g.leftImage.trim() : base.leftImage;
+      g.leftImageAlt = (g.leftImageAlt || '').trim() || base.leftImageAlt;
+      g.rightImage =
+        typeof g.rightImage === 'string' && g.rightImage.trim()
+          ? g.rightImage.trim()
+          : base.rightImage;
+      g.rightImageAlt = (g.rightImageAlt || '').trim() || base.rightImageAlt;
+      g.phone = (g.phone || '').trim() || base.phone;
+      g.whatsapp = (g.whatsapp || '').trim() || base.whatsapp;
+      g.email = (g.email || '').trim() || base.email;
+      g.address = (g.address || '').trim() || base.address;
+    }
+
+    function appendGitImageSlot(root, title, imageKey, altKey, imageVal, altVal, uploadKey) {
+      const wrap = document.createElement('div');
+      wrap.className = 'hrg-slot';
+      const sub = document.createElement('h4');
+      sub.textContent = title;
+      wrap.appendChild(sub);
+      const imgLab = document.createElement('label');
+      imgLab.textContent = 'Image URL';
+      const imgIn = document.createElement('input');
+      imgIn.type = 'text';
+      imgIn.placeholder = '/uploads/cms/… or /images/…';
+      imgIn.dataset[imageKey] = '1';
+      imgIn.value = imageVal || '';
+      wrap.appendChild(imgLab);
+      wrap.appendChild(imgIn);
+      if (imageVal) {
+        const prev = document.createElement('img');
+        prev.className = 'hrg-thumb-preview';
+        prev.alt = '';
+        prev.src = imageVal;
+        wrap.appendChild(prev);
+      }
+      const altLab = document.createElement('label');
+      altLab.textContent = 'Alt text (optional)';
+      const altIn = document.createElement('input');
+      altIn.type = 'text';
+      altIn.dataset[altKey] = '1';
+      altIn.value = altVal || '';
+      wrap.appendChild(altLab);
+      wrap.appendChild(altIn);
+      const pickRow = document.createElement('div');
+      pickRow.className = 'row';
+      pickRow.style.marginTop = '0.35rem';
+      const pickLabel = document.createElement('label');
+      pickLabel.className = 'pick-label';
+      pickLabel.appendChild(document.createTextNode('Upload image…'));
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.dataset[uploadKey] = '1';
+      pickLabel.appendChild(fileInput);
+      pickRow.appendChild(pickLabel);
+      wrap.appendChild(pickRow);
+      root.appendChild(wrap);
+    }
+
+    function renderGetInTouchSection() {
+      if (!site) return;
+      ensureGetInTouchSection();
+      const root = el('getInTouchRoot');
+      if (!root) return;
+      root.textContent = '';
+      const g = site.getInTouchSection;
+      const headLab = document.createElement('label');
+      headLab.textContent = 'Card heading';
+      const headIn = document.createElement('input');
+      headIn.type = 'text';
+      headIn.dataset.gitHeading = '1';
+      headIn.value = g.heading || '';
+      root.appendChild(headLab);
+      root.appendChild(headIn);
+      const topLab = document.createElement('p');
+      topLab.className = 'hint';
+      topLab.style.marginTop = '0.75rem';
+      topLab.textContent = 'Top gallery (3 images)';
+      root.appendChild(topLab);
+      const topRow = document.createElement('div');
+      topRow.className = 'rg-slots-row';
+      for (let i = 0; i < GIT_TOP_COUNT; i++) {
+        const slot = g.topImages[i];
+        const wrap = document.createElement('div');
+        wrap.className = 'hrg-slot';
+        const sub = document.createElement('h4');
+        sub.textContent = 'Top image ' + (i + 1);
+        wrap.appendChild(sub);
+        const imgLab = document.createElement('label');
+        imgLab.textContent = 'Image URL';
+        const imgIn = document.createElement('input');
+        imgIn.type = 'text';
+        imgIn.placeholder = '/uploads/cms/… or /images/…';
+        imgIn.dataset.gitTopImage = String(i);
+        imgIn.value = (slot && slot.image) || '';
+        wrap.appendChild(imgLab);
+        wrap.appendChild(imgIn);
+        if (slot && slot.image) {
+          const prev = document.createElement('img');
+          prev.className = 'hrg-thumb-preview';
+          prev.alt = '';
+          prev.src = slot.image;
+          wrap.appendChild(prev);
+        }
+        const altLab = document.createElement('label');
+        altLab.textContent = 'Alt text (optional)';
+        const altIn = document.createElement('input');
+        altIn.type = 'text';
+        altIn.dataset.gitTopAlt = String(i);
+        altIn.value = (slot && slot.alt) || '';
+        wrap.appendChild(altLab);
+        wrap.appendChild(altIn);
+        const pickRow = document.createElement('div');
+        pickRow.className = 'row';
+        pickRow.style.marginTop = '0.35rem';
+        const pickLabel = document.createElement('label');
+        pickLabel.className = 'pick-label';
+        pickLabel.appendChild(document.createTextNode('Upload image…'));
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.dataset.gitTopUpload = String(i);
+        pickLabel.appendChild(fileInput);
+        pickRow.appendChild(pickLabel);
+        wrap.appendChild(pickRow);
+        topRow.appendChild(wrap);
+      }
+      root.appendChild(topRow);
+      const sideLab = document.createElement('p');
+      sideLab.className = 'hint';
+      sideLab.style.marginTop = '0.75rem';
+      sideLab.textContent = 'Contact row — side photos';
+      root.appendChild(sideLab);
+      const sideRow = document.createElement('div');
+      sideRow.className = 'iws-side-row';
+      appendGitImageSlot(
+        sideRow,
+        'Left photo',
+        'gitLeftImage',
+        'gitLeftAlt',
+        g.leftImage,
+        g.leftImageAlt,
+        'gitLeftUpload',
+      );
+      appendGitImageSlot(
+        sideRow,
+        'Right photo',
+        'gitRightImage',
+        'gitRightAlt',
+        g.rightImage,
+        g.rightImageAlt,
+        'gitRightUpload',
+      );
+      root.appendChild(sideRow);
+      const contactLab = document.createElement('p');
+      contactLab.className = 'hint';
+      contactLab.style.marginTop = '0.75rem';
+      contactLab.textContent = 'Contact details';
+      root.appendChild(contactLab);
+      [
+        ['Phone', 'gitPhone', g.phone],
+        ['WhatsApp', 'gitWhatsapp', g.whatsapp],
+        ['Email', 'gitEmail', g.email],
+        ['Address', 'gitAddress', g.address],
+      ].forEach(([label, key, val]) => {
+        const lab = document.createElement('label');
+        lab.textContent = label;
+        const inp =
+          key === 'gitAddress'
+            ? document.createElement('textarea')
+            : document.createElement('input');
+        if (inp instanceof HTMLInputElement) inp.type = 'text';
+        if (key === 'gitAddress' && inp instanceof HTMLTextAreaElement) inp.rows = 2;
+        inp.dataset[key] = '1';
+        inp.value = val || '';
+        root.appendChild(lab);
+        root.appendChild(inp);
+      });
+    }
+
+    function onGetInTouchInput(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement)) return;
+      if (t.type === 'file') return;
+      ensureGetInTouchSection();
+      const g = site.getInTouchSection;
+      if (t.dataset.gitHeading != null) {
+        g.heading = t.value;
+        return;
+      }
+      const topImg = t.dataset.gitTopImage;
+      if (topImg != null) {
+        g.topImages[+topImg].image = t.value;
+        return;
+      }
+      const topAlt = t.dataset.gitTopAlt;
+      if (topAlt != null) {
+        g.topImages[+topAlt].alt = t.value;
+        return;
+      }
+      if (t.dataset.gitLeftImage != null) {
+        g.leftImage = t.value;
+        return;
+      }
+      if (t.dataset.gitLeftAlt != null) {
+        g.leftImageAlt = t.value;
+        return;
+      }
+      if (t.dataset.gitRightImage != null) {
+        g.rightImage = t.value;
+        return;
+      }
+      if (t.dataset.gitRightAlt != null) {
+        g.rightImageAlt = t.value;
+        return;
+      }
+      if (t.dataset.gitPhone != null) {
+        g.phone = t.value;
+        return;
+      }
+      if (t.dataset.gitWhatsapp != null) {
+        g.whatsapp = t.value;
+        return;
+      }
+      if (t.dataset.gitEmail != null) {
+        g.email = t.value;
+        return;
+      }
+      if (t.dataset.gitAddress != null) {
+        g.address = t.value;
+      }
+    }
+
+    async function uploadGetInTouchGallery(file, kind, index) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?gallery=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      ensureGetInTouchSection();
+      const g = site.getInTouchSection;
+      if (kind === 'top') g.topImages[index].image = data.url;
+      else if (kind === 'left') g.leftImage = data.url;
+      else g.rightImage = data.url;
+      renderGetInTouchSection();
+      showMsg('Image uploaded — remember to Save changes.', 'ok');
+    }
+
+    function onGetInTouchFileChange(e) {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement) || t.type !== 'file') return;
+      const f = t.files && t.files[0];
+      t.value = '';
+      if (!f) return;
+      if (t.dataset.gitTopUpload != null) {
+        uploadGetInTouchGallery(f, 'top', +t.dataset.gitTopUpload);
+        return;
+      }
+      if (t.dataset.gitLeftUpload != null) uploadGetInTouchGallery(f, 'left', 0);
+      if (t.dataset.gitRightUpload != null) uploadGetInTouchGallery(f, 'right', 0);
+    }
+
+    function buildGetInTouchPayload() {
+      ensureGetInTouchSection();
+      const g = site.getInTouchSection;
+      const heading = (g.heading || '').trim();
+      if (!heading) throw new Error('Get in Touch section needs a card heading.');
+      const topImages = g.topImages.map((s, i) => {
+        const image = (s.image || '').trim();
+        if (!image) throw new Error('Get in Touch top image ' + (i + 1) + ' needs a URL or upload.');
+        const o = { image };
+        const alt = (s.alt || '').trim();
+        if (alt) o.alt = alt;
+        return o;
+      });
+      const leftImage = (g.leftImage || '').trim();
+      if (!leftImage) throw new Error('Get in Touch needs a left photo URL or upload.');
+      const rightImage = (g.rightImage || '').trim();
+      if (!rightImage) throw new Error('Get in Touch needs a right photo URL or upload.');
+      const phone = (g.phone || '').trim();
+      if (!phone) throw new Error('Get in Touch needs a phone number.');
+      const whatsapp = (g.whatsapp || '').trim();
+      if (!whatsapp) throw new Error('Get in Touch needs a WhatsApp number.');
+      const email = (g.email || '').trim();
+      if (!email) throw new Error('Get in Touch needs an email address.');
+      const address = (g.address || '').trim();
+      if (!address) throw new Error('Get in Touch needs an address.');
+      const out = { heading, topImages, leftImage, rightImage, phone, whatsapp, email, address };
+      const leftImageAlt = (g.leftImageAlt || '').trim();
+      if (leftImageAlt) out.leftImageAlt = leftImageAlt;
+      const rightImageAlt = (g.rightImageAlt || '').trim();
+      if (rightImageAlt) out.rightImageAlt = rightImageAlt;
+      return out;
+    }
+
+    let site = null;
+
+    /** Hero center tile: ~2.3–3.4:1 matches typical + wide layouts with object-contain */
+    const ASPECT_GOOD_MIN = 2.3;
+    const ASPECT_GOOD_MAX = 3.4;
+    const ASPECT_WARN_LOW = 2.0;
+    const ASPECT_WARN_HIGH = 4.0;
+
+    function formatAspectHint(w, h) {
+      const ratio = w / h;
+      const ratioText = ratio.toFixed(2) + ':1';
+      let level;
+      let label;
+      if (ratio >= ASPECT_GOOD_MIN && ratio <= ASPECT_GOOD_MAX) {
+        level = 'good';
+        label = 'Good match for hero strip';
+      } else if (
+        (ratio >= ASPECT_WARN_LOW && ratio < ASPECT_GOOD_MIN) ||
+        (ratio > ASPECT_GOOD_MAX && ratio <= ASPECT_WARN_HIGH)
+      ) {
+        level = 'warn';
+        label = 'Minor bars possible on some screen widths';
+      } else if (ratio < ASPECT_WARN_LOW) {
+        level = 'bad';
+        label = 'Likely left/right bars (asset is tall vs strip)';
+      } else {
+        level = 'bad';
+        label = 'Likely top/bottom bars (asset is very wide)';
+      }
+      return { ratioText, label, level };
+    }
+
+    function measureImageUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          if (!w || !h) reject(new Error('no dims'));
+          else resolve({ w, h });
+        };
+        img.onerror = () => reject(new Error('load failed'));
+        img.src = url;
+      });
+    }
+
+    function measureVideoUrl(url) {
+      return new Promise((resolve, reject) => {
+        const v = document.createElement('video');
+        v.preload = 'metadata';
+        v.muted = true;
+        v.playsInline = true;
+        const teardown = () => {
+          v.removeAttribute('src');
+          v.load();
+        };
+        v.addEventListener('loadedmetadata', () => {
+          const w = v.videoWidth;
+          const h = v.videoHeight;
+          teardown();
+          if (!w || !h) reject(new Error('no dims'));
+          else resolve({ w, h });
+        });
+        v.addEventListener('error', () => {
+          teardown();
+          reject(new Error('load failed'));
+        });
+        v.src = url;
+      });
+    }
+
+    async function measureLocalFile(file) {
+      const url = URL.createObjectURL(file);
+      try {
+        const t = (file.type || '').toLowerCase();
+        if (t.startsWith('video/')) return await measureVideoUrl(url);
+        if (t.startsWith('image/')) return await measureImageUrl(url);
+        throw new Error('unsupported');
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    /** 12∶5 — matches backend slide Sharp target (1200×500 fit-inside) */
+    const HERO_CROP_ASPECT = 12 / 5;
+    const CROP_EXPORT_W = 1200;
+    const CROP_EXPORT_H = 500;
+
+    let slideCropperInstance = null;
+    let slideCropBlobUrl = null;
+    let heroPreviewDebounce = null;
+
+    function isRasterImageForCrop(file) {
+      const t = (file.type || '').toLowerCase();
+      if (!t.startsWith('image/')) return false;
+      if (t === 'image/svg+xml' || t === 'image/gif') return false;
+      return true;
+    }
+
+    function hideSlideCropModal() {
+      const modal = el('slideCropModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+      if (slideCropperInstance) {
+        try {
+          slideCropperInstance.destroy();
+        } catch (_) {}
+        slideCropperInstance = null;
+      }
+      if (slideCropBlobUrl) {
+        URL.revokeObjectURL(slideCropBlobUrl);
+        slideCropBlobUrl = null;
+      }
+      const simg = el('slideCropImg');
+      if (simg) {
+        simg.onload = null;
+        simg.onerror = null;
+        simg.removeAttribute('src');
+      }
+      const pimg = el('heroPreviewImg');
+      if (pimg) pimg.removeAttribute('src');
+      const v = el('heroPreviewVideo');
+      if (v) {
+        v.pause();
+        v.removeAttribute('src');
+        try {
+          v.load();
+        } catch (_) {}
+      }
+      clearTimeout(heroPreviewDebounce);
+      const b = el('slideCropBackdrop');
+      const c = el('slideCropCancel');
+      const cf = el('slideCropConfirm');
+      const vu = el('slideCropVideoUpload');
+      if (b) b.onclick = null;
+      if (c) c.onclick = null;
+      if (cf) cf.onclick = null;
+      if (vu) vu.onclick = null;
+    }
+
+    function updateHeroPreviewFromCropper() {
+      if (!slideCropperInstance || typeof slideCropperInstance.getCroppedCanvas !== 'function')
+        return;
+      const canvas = slideCropperInstance.getCroppedCanvas({
+        width: 360,
+        height: 150,
+        imageSmoothingQuality: 'high',
+      });
+      if (!canvas) return;
+      el('heroPreviewImg').src = canvas.toDataURL('image/jpeg', 0.88);
+    }
+
+    function scheduleHeroPreviewUpdate() {
+      clearTimeout(heroPreviewDebounce);
+      heroPreviewDebounce = setTimeout(updateHeroPreviewFromCropper, 80);
+    }
+
+    function openImageCropModal(file) {
+      return new Promise((resolve) => {
+        hideSlideCropModal();
+        if (typeof Cropper === 'undefined') {
+          resolve(null);
+          return;
+        }
+        const modal = el('slideCropModal');
+        el('cropBodyImage').classList.remove('hidden');
+        el('cropBodyVideo').classList.add('hidden');
+        el('slideCropTitle').textContent = 'Crop for hero strip';
+        el('slideCropSubtitle').textContent =
+          'Frame is locked to 12∶5 (same proportions as the homepage center tile). Drag to position the image; use the cropper handles or wheel to zoom.';
+        el('slideCropConfirm').classList.remove('hidden');
+        el('slideCropVideoUpload').classList.add('hidden');
+
+        let settled = false;
+        function settle(fileOut) {
+          if (settled) return;
+          settled = true;
+          hideSlideCropModal();
+          resolve(fileOut);
+        }
+
+        slideCropBlobUrl = URL.createObjectURL(file);
+        const simg = el('slideCropImg');
+        simg.onerror = () => settle(null);
+        simg.onload = () => {
+          if (slideCropperInstance) {
+            try {
+              slideCropperInstance.destroy();
+            } catch (_) {}
+            slideCropperInstance = null;
+          }
+          slideCropperInstance = new Cropper(simg, {
+            aspectRatio: HERO_CROP_ASPECT,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 1,
+            ready() {
+              updateHeroPreviewFromCropper();
+            },
+            crop: scheduleHeroPreviewUpdate,
+            zoom: scheduleHeroPreviewUpdate,
+          });
+        };
+        simg.src = slideCropBlobUrl;
+
+        el('slideCropCancel').onclick = () => settle(null);
+        el('slideCropBackdrop').onclick = () => settle(null);
+        el('slideCropConfirm').onclick = () => {
+          if (!slideCropperInstance) {
+            settle(null);
+            return;
+          }
+          const canvas = slideCropperInstance.getCroppedCanvas({
+            width: CROP_EXPORT_W,
+            height: CROP_EXPORT_H,
+            imageSmoothingQuality: 'high',
+          });
+          if (!canvas) {
+            settle(null);
+            return;
+          }
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                settle(null);
+                return;
+              }
+              const base = (file.name || 'slide').replace(/\.[^.]+$/, '');
+              settle(new File([blob], base + '-hero.jpg', { type: 'image/jpeg' }));
+            },
+            'image/jpeg',
+            0.92
+          );
+        };
+
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+      });
+    }
+
+    function openVideoHeroPreviewModal(file, leadText) {
+      return new Promise((resolve) => {
+        hideSlideCropModal();
+        const modal = el('slideCropModal');
+        el('cropBodyImage').classList.add('hidden');
+        el('cropBodyVideo').classList.remove('hidden');
+        el('slideCropTitle').textContent = 'Video — homepage preview';
+        el('slideCropSubtitle').textContent = '';
+        el('videoPreviewExplainer').textContent =
+          (leadText ? leadText + ' ' : '') +
+          'Black bars show how the live slider displays this file (object-contain). For minimal bars, re-export near 12∶5 (e.g. 1920×800) in an editor.';
+        el('slideCropConfirm').classList.add('hidden');
+        el('slideCropVideoUpload').classList.remove('hidden');
+
+        const vurl = URL.createObjectURL(file);
+        const v = el('heroPreviewVideo');
+        v.src = vurl;
+        v.play().catch(() => {});
+
+        let settled = false;
+        function settle(upload) {
+          if (settled) return;
+          settled = true;
+          v.pause();
+          v.removeAttribute('src');
+          try {
+            v.load();
+          } catch (_) {}
+          URL.revokeObjectURL(vurl);
+          hideSlideCropModal();
+          resolve(!!upload);
+        }
+
+        el('slideCropCancel').onclick = () => settle(false);
+        el('slideCropBackdrop').onclick = () => settle(false);
+        el('slideCropVideoUpload').onclick = () => settle(true);
+
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+      });
+    }
+
+    function applyAspectHint(el, w, h) {
+      const { ratioText, label, level } = formatAspectHint(w, h);
+      el.className = 'slide-aspect-hint ' + level;
+      el.textContent = w + '×' + h + ' · ' + ratioText + ' — ' + label;
+    }
+
+    function setAspectHintUnknown(el, message) {
+      el.className = 'slide-aspect-hint unknown';
+      el.textContent =
+        message || 'Could not read dimensions (broken URL, CORS, or unsupported type)';
+    }
+
+    function showMsg(text, kind) {
+      msg.textContent = text || '';
+      msg.className = kind === 'ok' ? 'ok' : kind === 'bad' ? 'bad' : '';
+    }
+
+    function getKey() {
+      return sessionStorage.getItem(STORAGE) || '';
+    }
+
+    function setKey(k) {
+      if (k) sessionStorage.setItem(STORAGE, k);
+      else sessionStorage.removeItem(STORAGE);
+    }
+
+    function authHeaders() {
+      const k = getKey();
+      return {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + k,
+      };
+    }
+
+    async function loadSite() {
+      const r = await fetch('/api/content');
+      if (!r.ok) throw new Error('Failed to load content');
+      site = await r.json();
+      if (!site.hero) site.hero = { slides: [], branding: {} };
+      if (!Array.isArray(site.hero.slides)) site.hero.slides = [];
+      if (!site.hero.branding) site.hero.branding = {};
+      if (!site.teamManagement) site.teamManagement = { members: [] };
+      if (!Array.isArray(site.teamManagement.members)) {
+        site.teamManagement.members = [];
+      }
+      ensureHomeRightGallery();
+      ensureWhyChooseSection();
+      fillForm();
+    }
+
+    function fillForm() {
+      const b = site.hero.branding;
+      el('logoSrc').value = b.logoSrc || '';
+      el('logoAlt').value = b.logoAlt || '';
+      el('title').value = b.title || '';
+      el('subtitle').value = b.subtitle || '';
+      renderSlides();
+      renderTeamMembers();
+      renderHomeRightGallery();
+      renderWhyChooseSection();
+      renderBuildingTrustSection();
+      renderGoldProductsSection();
+      renderGoldRefiningProcessSection();
+      renderRefiningGallerySection();
+      renderIndustriesWeServeSection();
+      renderMiningExtractionSection();
+      renderGlobalShippingSection();
+      renderGetInTouchSection();
+    }
+
+    function newMemberId() {
+      return (
+        'member-' +
+        Date.now().toString(36) +
+        Math.random().toString(36).slice(2, 8)
+      );
+    }
+
+    function readFormBranding() {
+      return {
+        logoSrc: el('logoSrc').value.trim(),
+        logoAlt: el('logoAlt').value.trim(),
+        title: el('title').value.trim(),
+        subtitle: el('subtitle').value.trim(),
+      };
+    }
+
+    async function uploadBrandingLogo(file) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?logo=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return;
+      }
+      const data = await r.json();
+      el('logoSrc').value = data.url;
+      if (!String(el('logoAlt').value || '').trim()) {
+        el('logoAlt').value = file.name
+          .replace(/\.[^.]+$/, '')
+          .replace(/[-_]+/g, ' ');
+      }
+      showMsg('Logo uploaded — remember to Save changes.', 'ok');
+    }
+
+    async function uploadSlideMedia(index, file) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return false;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return false;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return false;
+      }
+      const data = await r.json();
+      const slide = site.hero.slides[index];
+      slide.src = data.url;
+      slide.type = data.mimeType.startsWith('video/') ? 'video' : 'image';
+      if (slide.type === 'image') {
+        if (data.urlSm) slide.srcSm = data.urlSm;
+        else delete slide.srcSm;
+        if (data.thumbUrl) slide.thumbSrc = data.thumbUrl;
+        else delete slide.thumbSrc;
+        if (data.thumbSmUrl) slide.thumbSrcSm = data.thumbSmUrl;
+        else delete slide.thumbSrcSm;
+        if (!String(slide.alt || '').trim()) {
+          slide.alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+        }
+      } else {
+        delete slide.thumbSrc;
+        delete slide.thumbSrcSm;
+        delete slide.srcSm;
+      }
+      showMsg('File uploaded — remember to Save changes.', 'ok');
+      renderSlides();
+      return true;
+    }
+
+    function syncSlidePreview(card, index) {
+      const box = card.querySelector('[data-role="preview"]');
+      const hintEl = card.querySelector('[data-role="aspect-hint"]');
+      if (!box || !hintEl || !site.hero.slides[index]) return;
+      const slide = site.hero.slides[index];
+      const url = String(slide.src || '').trim();
+      const type = slide.type === 'video' ? 'video' : 'image';
+      box.innerHTML = '';
+      if (!url) {
+        const s = document.createElement('span');
+        s.className = 'preview-empty';
+        s.textContent = 'No preview — add a URL or choose a file';
+        box.appendChild(s);
+        hintEl.className = 'slide-aspect-hint unknown';
+        hintEl.textContent = 'Dimensions appear when media is loaded';
+        return;
+      }
+      hintEl.className = 'slide-aspect-hint unknown';
+      hintEl.textContent = 'Reading dimensions…';
+      (async () => {
+        try {
+          const dims =
+            type === 'video' ? await measureVideoUrl(url) : await measureImageUrl(url);
+          applyAspectHint(hintEl, dims.w, dims.h);
+        } catch {
+          setAspectHintUnknown(hintEl);
+        }
+      })();
+      if (type === 'video') {
+        const v = document.createElement('video');
+        v.src = url;
+        v.controls = true;
+        v.muted = true;
+        v.playsInline = true;
+        v.preload = 'metadata';
+        v.addEventListener('error', () => {
+          box.innerHTML =
+            '<span class="preview-error">Could not load video (check URL or CORS)</span>';
+          setAspectHintUnknown(hintEl);
+        });
+        box.appendChild(v);
+      } else {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = slide.alt || '';
+        img.loading = 'lazy';
+        img.addEventListener('error', () => {
+          box.innerHTML =
+            '<span class="preview-error">Could not load image (check URL)</span>';
+          setAspectHintUnknown(hintEl);
+        });
+        box.appendChild(img);
+      }
+    }
+
+    function renderSlides() {
+      slidesRoot.innerHTML = '';
+      if (!site.hero.slides.length) {
+        const empty = document.createElement('p');
+        empty.className = 'slides-empty';
+        empty.innerHTML =
+          'No slides yet. Click <strong>Add slide</strong> to create the first card.';
+        slidesRoot.appendChild(empty);
+        return;
+      }
+      site.hero.slides.forEach((slide, index) => {
+        const card = document.createElement('div');
+        card.className = 'slide-card collapsible collapsed';
+        const slideNum = index + 1;
+        const metaLabel = slide.type === 'video' ? 'Video' : 'Image';
+        card.innerHTML =
+          '<div class="slide-card-head" data-role="toggle" role="button" tabindex="0" aria-expanded="false">' +
+          '<span class="slide-card-head-left">' +
+          '<span class="slide-card-caret" aria-hidden="true"></span>' +
+          '<span class="slide-card-title">Slide ' +
+          slideNum +
+          '</span>' +
+          '</span>' +
+          '<span class="slide-card-meta">' +
+          metaLabel +
+          '</span>' +
+          '</div>' +
+          '<div class="slide-card-body">' +
+          '<label>Type</label>' +
+          '<select data-k="type" data-i="' +
+          index +
+          '">' +
+          '<option value="image">image</option>' +
+          '<option value="video">video</option>' +
+          '</select>' +
+          '<label>Image or video file</label>' +
+          '<div class="row" style="margin-bottom:0.5rem">' +
+          '<label class="pick-label">Choose file…' +
+          '<input type="file" accept="image/*,video/*" data-pick="' +
+          index +
+          '" />' +
+          '</label>' +
+          '</div>' +
+          '<label>Path / URL (optional if you upload above)</label>' +
+          '<input type="text" data-k="src" data-i="' +
+          index +
+          '" placeholder="/uploads/cms/… or https://…" />' +
+          '<label>Preview</label>' +
+          '<div class="slide-preview" data-role="preview" aria-live="polite"></div>' +
+          '<div class="slide-aspect-hint unknown" data-role="aspect-hint" aria-live="polite"></div>' +
+          '<div class="altWrap"><label>Alt (images only)</label>' +
+          '<input type="text" data-k="alt" data-i="' +
+          index +
+          '" /></div>' +
+          '</div>' +
+          '<div class="slide-card-actions">' +
+          '<button type="button" class="secondary" data-up="' +
+          index +
+          '">Move up</button>' +
+          '<button type="button" class="secondary" data-down="' +
+          index +
+          '">Move down</button>' +
+          '<button type="button" class="danger" data-del="' +
+          index +
+          '">Remove</button>' +
+          '</div>';
+        const slideHead = card.querySelector('[data-role="toggle"]');
+        if (slideHead) {
+          slideHead.addEventListener('click', () => {
+            const collapsed = card.classList.toggle('collapsed');
+            slideHead.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+          });
+          slideHead.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              slideHead.click();
+            }
+          });
+        }
+
+        card.querySelector('[data-k="type"]').value = slide.type || 'image';
+        card.querySelector('[data-k="src"]').value = slide.src || '';
+        const altIn = card.querySelector('[data-k="alt"]');
+        altIn.value = slide.alt || '';
+        const altWrap = card.querySelector('.altWrap');
+        altWrap.style.display = slide.type === 'video' ? 'none' : 'block';
+
+        card.querySelector('[data-k="type"]').addEventListener('change', (e) => {
+          const i = +e.target.getAttribute('data-i');
+          site.hero.slides[i].type = e.target.value;
+          if (e.target.value === 'video') {
+            delete site.hero.slides[i].thumbSrc;
+            delete site.hero.slides[i].thumbSrcSm;
+            delete site.hero.slides[i].srcSm;
+          }
+          renderSlides();
+        });
+        card.querySelector('[data-pick]').addEventListener('change', async (e) => {
+          const i = +e.target.getAttribute('data-pick');
+          const f = e.target.files && e.target.files[0];
+          e.target.value = '';
+          if (!f) return;
+
+          const mime = (f.type || '').toLowerCase();
+
+          if (mime.startsWith('video/')) {
+            let aspectNote = '';
+            let aspectBad = false;
+            let hintLevel = 'good';
+            try {
+              const { w, h } = await measureLocalFile(f);
+              const hint = formatAspectHint(w, h);
+              hintLevel = hint.level;
+              if (hint.level === 'bad') {
+                aspectNote =
+                  hint.ratioText + ' — ' + hint.label + ' Target ~2.4:1–3.2:1.';
+                aspectBad = true;
+              } else if (hint.level === 'warn') {
+                aspectNote = hint.ratioText + ' — minor bars possible on some layouts.';
+              }
+            } catch (_) {}
+
+            if (hintLevel === 'bad' || hintLevel === 'warn') {
+              const use = await openVideoHeroPreviewModal(f, aspectNote);
+              if (!use) {
+                showMsg('Video upload cancelled.', '');
+                return;
+              }
+            }
+
+            const uploaded = await uploadSlideMedia(i, f);
+            if (uploaded && aspectNote && (hintLevel === 'bad' || hintLevel === 'warn')) {
+              showMsg('Uploaded — Save changes. ' + aspectNote, aspectBad ? 'bad' : 'ok');
+            }
+            return;
+          }
+
+          if (mime.startsWith('image/') && isRasterImageForCrop(f)) {
+            let needCrop = false;
+            try {
+              const { w, h } = await measureLocalFile(f);
+              const hint = formatAspectHint(w, h);
+              needCrop = hint.level === 'bad' || hint.level === 'warn';
+            } catch (_) {
+              needCrop = true;
+            }
+
+            let fileToUpload = f;
+            if (needCrop) {
+              if (typeof Cropper === 'undefined') {
+                showMsg(
+                  'Crop editor did not load — uploading original. Refresh the page or check your network.',
+                  'bad'
+                );
+              } else {
+                const cropped = await openImageCropModal(f);
+                if (!cropped) {
+                  showMsg('Cropped upload cancelled — slide unchanged.', '');
+                  return;
+                }
+                fileToUpload = cropped;
+              }
+            }
+
+            await uploadSlideMedia(i, fileToUpload);
+            return;
+          }
+
+          let aspectNote = '';
+          let aspectBad = false;
+          try {
+            const { w, h } = await measureLocalFile(f);
+            const hint = formatAspectHint(w, h);
+            if (hint.level === 'bad') {
+              aspectNote =
+                hint.ratioText + ' — ' + hint.label + ' Target ~2.4:1–3.2:1.';
+              aspectBad = true;
+            } else if (hint.level === 'warn') {
+              aspectNote = hint.ratioText + ' — minor bars possible on some layouts.';
+            }
+          } catch (_) {}
+          const uploaded = await uploadSlideMedia(i, f);
+          if (uploaded && aspectNote) {
+            showMsg('Uploaded — Save changes. ' + aspectNote, aspectBad ? 'bad' : 'ok');
+          }
+        });
+        card.querySelector('[data-k="src"]').addEventListener('input', (e) => {
+          const i = +e.target.getAttribute('data-i');
+          site.hero.slides[i].src = e.target.value;
+          delete site.hero.slides[i].thumbSrc;
+          delete site.hero.slides[i].thumbSrcSm;
+          delete site.hero.slides[i].srcSm;
+          syncSlidePreview(card, i);
+        });
+        card.querySelector('[data-k="alt"]').addEventListener('input', (e) => {
+          const i = +e.target.getAttribute('data-i');
+          site.hero.slides[i].alt = e.target.value;
+          const img = card.querySelector('.slide-preview img');
+          if (img) img.alt = e.target.value || '';
+        });
+        card.querySelector('[data-up]').addEventListener('click', () => {
+          if (index <= 0) return;
+          const t = site.hero.slides[index - 1];
+          site.hero.slides[index - 1] = site.hero.slides[index];
+          site.hero.slides[index] = t;
+          renderSlides();
+        });
+        card.querySelector('[data-down]').addEventListener('click', () => {
+          if (index >= site.hero.slides.length - 1) return;
+          const t = site.hero.slides[index + 1];
+          site.hero.slides[index + 1] = site.hero.slides[index];
+          site.hero.slides[index] = t;
+          renderSlides();
+        });
+        card.querySelector('[data-del]').addEventListener('click', () => {
+          site.hero.slides.splice(index, 1);
+          renderSlides();
+        });
+        syncSlidePreview(card, index);
+        slidesRoot.appendChild(card);
+      });
+    }
+
+    async function uploadTeamPortrait(index, file) {
+      showMsg('');
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return false;
+      }
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media?portrait=1', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return false;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return false;
+      }
+      const data = await r.json();
+      const member = site.teamManagement.members[index];
+      member.image = data.url;
+      if (!String(member.imageAlt || '').trim()) {
+        member.imageAlt = file.name
+          .replace(/\.[^.]+$/, '')
+          .replace(/[-_]+/g, ' ');
+      }
+      renderTeamMembers();
+      showMsg('Photo uploaded — Save changes.', 'ok');
+      return true;
+    }
+
+    function syncTeamPreview(card, index) {
+      const box = card.querySelector('.team-preview');
+      if (!box || !site.teamManagement.members[index]) return;
+      const member = site.teamManagement.members[index];
+      const url = String(member.image || '').trim();
+      box.innerHTML = '';
+      if (!url) {
+        const s = document.createElement('span');
+        s.className = 'preview-empty';
+        s.textContent = 'No preview — add a URL or choose a photo';
+        box.appendChild(s);
+        return;
+      }
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = member.imageAlt || member.name || '';
+      img.onerror = () => {
+        box.innerHTML = '';
+        const s = document.createElement('span');
+        s.className = 'preview-empty';
+        s.textContent = 'Could not load image';
+        box.appendChild(s);
+      };
+      box.appendChild(img);
+    }
+
+    function renderTeamMembers() {
+      teamMembersRoot.innerHTML = '';
+      const members = site.teamManagement.members;
+      const addBtn = el('btnAddTeamMember');
+      if (addBtn) {
+        addBtn.classList.toggle('hidden', members.length >= MAX_TEAM_MEMBERS);
+      }
+      if (!members.length) {
+        const empty = document.createElement('p');
+        empty.className = 'slides-empty';
+        empty.innerHTML =
+          'No team members yet. Click <strong>Add member</strong> to create the first card.';
+        teamMembersRoot.appendChild(empty);
+        return;
+      }
+      members.forEach((member, index) => {
+        const card = document.createElement('div');
+        card.className = 'slide-card';
+        const memberNum = index + 1;
+        card.innerHTML =
+          '<div class="slide-card-head">' +
+          '<span class="slide-card-title">Member ' +
+          memberNum +
+          '</span>' +
+          '</div>' +
+          '<div class="slide-card-body">' +
+          '<label>Photo</label>' +
+          '<div class="row" style="margin-bottom:0.5rem">' +
+          '<label class="pick-label">Choose photo…' +
+          '<input type="file" data-team-pick="' +
+          index +
+          '" accept="image/*" />' +
+          '</label>' +
+          '</div>' +
+          '<div class="slide-preview team-preview hero-preview-frame" style="aspect-ratio:4/5;max-width:200px"></div>' +
+          '<label>Path / URL</label>' +
+          '<input type="text" data-team-k="image" data-team-i="' +
+          index +
+          '" value="' +
+          (member.image || '').replace(/"/g, '&quot;') +
+          '" placeholder="/uploads/cms/… or /images/…" />' +
+          '<label>Image alt text</label>' +
+          '<input type="text" data-team-k="imageAlt" data-team-i="' +
+          index +
+          '" value="' +
+          (member.imageAlt || '').replace(/"/g, '&quot;') +
+          '" />' +
+          '<label>Name</label>' +
+          '<input type="text" data-team-k="name" data-team-i="' +
+          index +
+          '" value="' +
+          (member.name || '').replace(/"/g, '&quot;') +
+          '" />' +
+          '<label>Designation</label>' +
+          '<input type="text" data-team-k="designation" data-team-i="' +
+          index +
+          '" value="' +
+          (member.designation || '').replace(/"/g, '&quot;') +
+          '" />' +
+          '<div class="row" style="margin-top:0.75rem">' +
+          '<button type="button" class="secondary" data-team-up="' +
+          index +
+          '">Move up</button>' +
+          '<button type="button" class="secondary" data-team-down="' +
+          index +
+          '">Move down</button>' +
+          '<button type="button" class="secondary" data-team-del="' +
+          index +
+          '">Remove</button>' +
+          '</div>' +
+          '</div>';
+        card.querySelector('[data-team-pick]').addEventListener('change', async (e) => {
+          const i = +e.target.getAttribute('data-team-pick');
+          const f = e.target.files && e.target.files[0];
+          e.target.value = '';
+          if (!f) return;
+          if (!(f.type || '').startsWith('image/')) {
+            showMsg('Choose an image file.', 'bad');
+            return;
+          }
+          await uploadTeamPortrait(i, f);
+        });
+        card.querySelectorAll('[data-team-k]').forEach((input) => {
+          input.addEventListener('input', (e) => {
+            const i = +e.target.getAttribute('data-team-i');
+            const key = e.target.getAttribute('data-team-k');
+            site.teamManagement.members[i][key] = e.target.value;
+            if (key === 'image') syncTeamPreview(card, i);
+          });
+        });
+        card.querySelector('[data-team-up]').addEventListener('click', () => {
+          if (index <= 0) return;
+          const t = site.teamManagement.members[index - 1];
+          site.teamManagement.members[index - 1] = site.teamManagement.members[index];
+          site.teamManagement.members[index] = t;
+          renderTeamMembers();
+        });
+        card.querySelector('[data-team-down]').addEventListener('click', () => {
+          if (index >= members.length - 1) return;
+          const t = site.teamManagement.members[index + 1];
+          site.teamManagement.members[index + 1] = site.teamManagement.members[index];
+          site.teamManagement.members[index] = t;
+          renderTeamMembers();
+        });
+        card.querySelector('[data-team-del]').addEventListener('click', () => {
+          site.teamManagement.members.splice(index, 1);
+          renderTeamMembers();
+        });
+        syncTeamPreview(card, index);
+        teamMembersRoot.appendChild(card);
+      });
+    }
+
+    function buildHeroPayload() {
+      const branding = readFormBranding();
+      if (!branding.logoSrc || !branding.title || !branding.subtitle) {
+        throw new Error('Logo URL, title, and subtitle are required.');
+      }
+      const slides = site.hero.slides.map((s) => {
+        const type = s.type === 'video' ? 'video' : 'image';
+        if (type === 'video') return { type: 'video', src: (s.src || '').trim() };
+        const im = {
+          type: 'image',
+          src: (s.src || '').trim(),
+          alt: (s.alt || '').trim(),
+        };
+        const th = (s.thumbSrc || '').trim();
+        const thSm = (s.thumbSrcSm || '').trim();
+        const srcSm = (s.srcSm || '').trim();
+        if (th) im.thumbSrc = th;
+        if (thSm) im.thumbSrcSm = thSm;
+        if (srcSm) im.srcSm = srcSm;
+        return im;
+      });
+      for (const sl of slides) {
+        if (!sl.src) throw new Error('Each slide needs a URL.');
+        if (sl.type === 'image' && !sl.alt) throw new Error('Each image slide needs alt text.');
+      }
+      return { branding, slides };
+    }
+
+    function buildTeamPayload() {
+      const members = site.teamManagement.members.slice(0, MAX_TEAM_MEMBERS).map((m) => {
+        const out = {
+          id: String(m.id || newMemberId()).trim(),
+          name: (m.name || '').trim(),
+          designation: (m.designation || '').trim(),
+          image: (m.image || '').trim(),
+        };
+        const alt = (m.imageAlt || '').trim();
+        if (alt) out.imageAlt = alt;
+        return out;
+      });
+      for (let i = 0; i < members.length; i++) {
+        const m = members[i];
+        if (!m.name) throw new Error('Team member ' + (i + 1) + ' needs a name.');
+        if (!m.designation) {
+          throw new Error('Team member ' + (i + 1) + ' needs a designation.');
+        }
+        if (!m.image) throw new Error('Team member ' + (i + 1) + ' needs a photo URL.');
+      }
+      return { members };
+    }
+
+    function buildPayload() {
+      return {
+        version: site.version,
+        hero: buildHeroPayload(),
+        teamManagement: buildTeamPayload(),
+        homeRightGallery: buildHomeRightGalleryPayload(),
+        whyChooseSection: buildWhyChoosePayload(),
+        buildingTrustSection: buildBuildingTrustPayload(),
+        goldProductsSection: buildGoldProductsPayload(),
+        goldRefiningProcessSection: buildGoldRefiningProcessPayload(),
+        refiningGallerySection: buildRefiningGalleryPayload(),
+        industriesWeServeSection: buildIndustriesWeServePayload(),
+        miningExtractionSection: buildMiningExtractionPayload(),
+        globalShippingSection: buildGlobalShippingPayload(),
+        getInTouchSection: buildGetInTouchPayload(),
+      };
+    }
+
+    async function save() {
+      showMsg('');
+      let payload;
+      try {
+        payload = buildPayload();
+      } catch (e) {
+        showMsg(e.message || 'Invalid form', 'bad');
+        return;
+      }
+      const r = await fetch('/api/content', {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized — check API key and sign in again.', 'bad');
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Save failed', 'bad');
+        return;
+      }
+      site = await r.json();
+      fillForm();
+      showMsg('Saved.', 'ok');
+    }
+
+    function setAdminView(view) {
+      const slider = el('view-slider');
+      const team = el('view-team');
+      const gallery = el('view-gallery');
+      const whyChoose = el('view-why-choose');
+      const buildingTrust = el('view-building-trust');
+      const goldProducts = el('view-gold-products');
+      const goldRefining = el('view-gold-refining');
+      const refiningGallery = el('view-refining-gallery');
+      const industriesServe = el('view-industries-serve');
+      const miningExtraction = el('view-mining-extraction');
+      const globalShipping = el('view-global-shipping');
+      const getInTouch = el('view-get-in-touch');
+      const settings = el('view-settings');
+      if (
+        !slider ||
+        !team ||
+        !gallery ||
+        !whyChoose ||
+        !buildingTrust ||
+        !goldProducts ||
+        !goldRefining ||
+        !refiningGallery ||
+        !industriesServe ||
+        !miningExtraction ||
+        !globalShipping ||
+        !getInTouch ||
+        !settings
+      )
+        return;
+      slider.classList.toggle('hidden', view !== 'slider');
+      team.classList.toggle('hidden', view !== 'team');
+      gallery.classList.toggle('hidden', view !== 'gallery');
+      whyChoose.classList.toggle('hidden', view !== 'why-choose');
+      buildingTrust.classList.toggle('hidden', view !== 'building-trust');
+      goldProducts.classList.toggle('hidden', view !== 'gold-products');
+      goldRefining.classList.toggle('hidden', view !== 'gold-refining');
+      refiningGallery.classList.toggle('hidden', view !== 'refining-gallery');
+      industriesServe.classList.toggle('hidden', view !== 'industries-serve');
+      miningExtraction.classList.toggle('hidden', view !== 'mining-extraction');
+      globalShipping.classList.toggle('hidden', view !== 'global-shipping');
+      getInTouch.classList.toggle('hidden', view !== 'get-in-touch');
+      settings.classList.toggle('hidden', view !== 'settings');
+      document.querySelectorAll('#editor .nav-item').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-view') === view);
+      });
+      const homeNavParent = el('homeNavParent');
+      if (homeNavParent) {
+        homeNavParent.classList.toggle('active-parent', view !== 'settings');
+      }
+    }
+
+    function showEditor() {
+      loginPanel.classList.add('hidden');
+      editor.classList.remove('hidden');
+      authBar.classList.remove('hidden');
+      const navToggle = el('navToggle');
+      if (navToggle) navToggle.classList.remove('hidden');
+      setAdminView('slider');
+    }
+
+    function showLogin() {
+      editor.classList.add('hidden');
+      authBar.classList.add('hidden');
+      loginPanel.classList.remove('hidden');
+      const navToggle = el('navToggle');
+      if (navToggle) navToggle.classList.add('hidden');
+      closeNavMenu();
+      setKey('');
+    }
+
+    el('btnLogin').addEventListener('click', async () => {
+      showMsg('');
+      const k = el('apiKey').value.trim();
+      if (!k) {
+        showMsg('Enter API key.', 'bad');
+        return;
+      }
+      try {
+        const r = await fetch('/api/auth/verify', {
+          headers: { Authorization: 'Bearer ' + k },
+        });
+        if (r.status === 503) {
+          showMsg('Server has no API_KEY configured.', 'bad');
+          return;
+        }
+        if (r.status === 401) {
+          showMsg('Wrong API key.', 'bad');
+          return;
+        }
+        if (!r.ok) {
+          showMsg('Could not verify key.', 'bad');
+          return;
+        }
+        setKey(k);
+        await loadSite();
+        showEditor();
+        el('apiKey').value = '';
+        showMsg('Signed in.', 'ok');
+      } catch (e) {
+        showMsg('Network error — is the backend running?', 'bad');
+      }
+    });
+
+    el('btnSignOut').addEventListener('click', () => {
+      showLogin();
+      showMsg('');
+    });
+
+    el('btnSave').addEventListener('click', () => save());
+
+    el('btnAddSlide').addEventListener('click', () => {
+      site.hero.slides.unshift({ type: 'image', src: '', alt: '' });
+      renderSlides();
+      const firstCard = slidesRoot.querySelector('.slide-card');
+      if (firstCard) {
+        firstCard.classList.remove('collapsed');
+        const head = firstCard.querySelector('[data-role="toggle"]');
+        if (head) head.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    el('btnAddTeamMember').addEventListener('click', () => {
+      if (site.teamManagement.members.length >= MAX_TEAM_MEMBERS) {
+        showMsg('Maximum ' + MAX_TEAM_MEMBERS + ' team members on the home page.', 'bad');
+        return;
+      }
+      site.teamManagement.members.push({
+        id: newMemberId(),
+        name: '',
+        designation: '',
+        image: '',
+        imageAlt: '',
+      });
+      renderTeamMembers();
+    });
+
+    el('logoPick').addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (f) uploadBrandingLogo(f);
+    });
+
+    function closeNavMenu() {
+      const sideNav = el('sideNav');
+      const navToggle = el('navToggle');
+      if (sideNav) sideNav.classList.remove('open');
+      if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    const navToggle = el('navToggle');
+    if (navToggle) {
+      navToggle.addEventListener('click', () => {
+        const sideNav = el('sideNav');
+        if (!sideNav) return;
+        const open = sideNav.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+
+    const homeNavParent = el('homeNavParent');
+    const homeNavGroup = el('homeNavGroup');
+    if (homeNavParent && homeNavGroup) {
+      homeNavParent.addEventListener('click', () => {
+        const open = homeNavGroup.classList.toggle('open');
+        homeNavParent.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    }
+
+    document.querySelectorAll('#editor .nav-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setAdminView(btn.getAttribute('data-view'));
+        closeNavMenu();
+      });
+    });
+
+    const homeRightGalleryRoot = el('homeRightGalleryRoot');
+    if (homeRightGalleryRoot) {
+      homeRightGalleryRoot.addEventListener('input', onHomeRightGalleryInput);
+      homeRightGalleryRoot.addEventListener('change', onHomeRightGalleryFileChange);
+    }
+
+    const whyChooseRoot = el('whyChooseRoot');
+    if (whyChooseRoot) {
+      whyChooseRoot.addEventListener('input', onWhyChooseInput);
+      whyChooseRoot.addEventListener('change', onWhyChooseFileChange);
+    }
+
+    const buildingTrustRoot = el('buildingTrustRoot');
+    if (buildingTrustRoot) {
+      buildingTrustRoot.addEventListener('input', onBuildingTrustInput);
+      buildingTrustRoot.addEventListener('change', onBuildingTrustFileChange);
+    }
+
+    const goldProductsRoot = el('goldProductsRoot');
+    if (goldProductsRoot) {
+      goldProductsRoot.addEventListener('input', onGoldProductsInput);
+      goldProductsRoot.addEventListener('change', onGoldProductsFileChange);
+    }
+
+    const goldRefiningRoot = el('goldRefiningRoot');
+    if (goldRefiningRoot) {
+      goldRefiningRoot.addEventListener('input', onGoldRefiningInput);
+      goldRefiningRoot.addEventListener('change', onGoldRefiningFileChange);
+    }
+
+    const refiningGalleryRoot = el('refiningGalleryRoot');
+    if (refiningGalleryRoot) {
+      refiningGalleryRoot.addEventListener('input', onRefiningGalleryInput);
+      refiningGalleryRoot.addEventListener('change', onRefiningGalleryFileChange);
+    }
+
+    const industriesServeRoot = el('industriesServeRoot');
+    if (industriesServeRoot) {
+      industriesServeRoot.addEventListener('input', onIndustriesWeServeInput);
+      industriesServeRoot.addEventListener('change', onIndustriesWeServeFileChange);
+    }
+
+    const miningExtractionRoot = el('miningExtractionRoot');
+    if (miningExtractionRoot) {
+      miningExtractionRoot.addEventListener('input', onMiningExtractionInput);
+      miningExtractionRoot.addEventListener('change', onMiningExtractionFileChange);
+    }
+
+    const globalShippingRoot = el('globalShippingRoot');
+    if (globalShippingRoot) {
+      globalShippingRoot.addEventListener('input', onGlobalShippingInput);
+    }
+
+    const getInTouchRoot = el('getInTouchRoot');
+    if (getInTouchRoot) {
+      getInTouchRoot.addEventListener('input', onGetInTouchInput);
+      getInTouchRoot.addEventListener('change', onGetInTouchFileChange);
+    }
+
+    (async function init() {
+      if (!getKey()) return;
+      try {
+        const r = await fetch('/api/auth/verify', {
+          headers: { Authorization: 'Bearer ' + getKey() },
+        });
+        if (!r.ok) {
+          setKey('');
+          return;
+        }
+        await loadSite();
+        showEditor();
+      } catch (e) {
+        setKey('');
+      }
+    })();
+  </script>
+</body>
+</html>
