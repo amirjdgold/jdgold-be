@@ -9,9 +9,13 @@ import { connectDb } from './db/connect.js';
 import pagesRouter from './routes/pages.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const IS_VERCEL = Boolean(process.env.VERCEL);
 const DATA_PATH = path.join(__dirname, '..', 'data', 'site.json');
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
-const CMS_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'cms');
+/** On Vercel the deploy FS is read-only; use /tmp (ephemeral — prefer object storage later). */
+const CMS_UPLOAD_DIR = IS_VERCEL
+  ? path.join('/tmp', 'uploads', 'cms')
+  : path.join(__dirname, '..', 'uploads', 'cms');
 /** Optional local SPA folder when SERVE_STATIC=true (no longer tied to a monorepo). */
 const FRONTEND_DIST = process.env.FRONTEND_DIST
   ? path.resolve(process.env.FRONTEND_DIST)
@@ -546,13 +550,14 @@ function requireApiKey(req, res, next) {
   next();
 }
 
-async function main() {
-  await applyEnvFromString(await loadEnvFile());
+async function createApp() {
+  if (!IS_VERCEL) {
+    await applyEnvFromString(await loadEnvFile());
+  }
   await fs.mkdir(CMS_UPLOAD_DIR, { recursive: true });
   await connectDb();
 
   const app = express();
-  const port = Number(process.env.PORT) || 3001;
 
   const allowedOrigins = (process.env.CORS_ORIGINS || '')
     .split(',')
@@ -721,7 +726,7 @@ async function main() {
   const serveStatic =
     process.env.SERVE_STATIC === 'true' || process.env.SERVE_STATIC === '1';
 
-  if (serveStatic) {
+  if (serveStatic && !IS_VERCEL) {
     app.use(express.static(FRONTEND_DIST));
     app.use((req, res, next) => {
       if (req.method !== 'GET' && req.method !== 'HEAD') return next();
@@ -731,15 +736,35 @@ async function main() {
     });
   }
 
-  app.listen(port, () => {
-    console.log(`API listening on http://localhost:${port}`);
-    if (serveStatic) {
-      console.log(`Serving static from ${FRONTEND_DIST}`);
-    }
-  });
+  return app;
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+let appPromise;
+
+/** Cached Express app for local + Vercel serverless. */
+export function getApp() {
+  if (!appPromise) {
+    appPromise = createApp();
+  }
+  return appPromise;
+}
+
+/** Vercel Node serverless entry. */
+export default async function handler(req, res) {
+  const app = await getApp();
+  return app(req, res);
+}
+
+if (!IS_VERCEL) {
+  getApp()
+    .then((app) => {
+      const port = Number(process.env.PORT) || 3001;
+      app.listen(port, () => {
+        console.log(`API listening on http://localhost:${port}`);
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+}

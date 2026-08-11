@@ -1,25 +1,34 @@
-# jdg-web backend
+# jdgold-be
 
-Express API for JD Gold CMS/content. Deploy to **Vercel** (or any Node host).
+Express API for JD Gold. Deploy on **Vercel**. Frontend on Cloudflare Pages.
 
-## Local development
+## Local
 
 ```bash
 cp .env.example .env
-# set API_KEY and MONGODB_URI
 npm install
 npm run dev
 ```
 
-API defaults to `http://localhost:3001`.
+## Deploy to Vercel (dashboard)
 
-## Production (Vercel)
+1. Import repo `amirjdgold/jdgold-be` in [Vercel](https://vercel.com/new)
+2. Framework preset: **Other**
+3. Root directory: `.` (repo root)
+4. Add Environment Variables (Production):
 
-1. Connect this repo in Vercel
-2. Set env vars: `MONGODB_URI`, `API_KEY`, `CORS_ORIGINS` (your Cloudflare Pages origin)
-3. Deploy
+| Name | Value |
+|------|--------|
+| `MONGODB_URI` | MongoDB Atlas connection string |
+| `API_KEY` | strong secret (same as admin login) |
+| `CORS_ORIGINS` | your Cloudflare Pages URL, e.g. `https://jdgold-fe.pages.dev` |
+| `SERVE_STATIC` | `false` |
 
-Notes:
+5. Deploy → note the URL, e.g. `https://jdgold-be.vercel.app`
+6. Smoke test: `https://jdgold-be.vercel.app/api/health` → `{"ok":true}`
 
-- Uploaded files under `uploads/cms` need durable storage on Vercel (ephemeral disk). Plan for object storage (e.g. R2/S3) before relying on uploads in production.
-- Prefer Cloudflare Pages for the frontend; keep `SERVE_STATIC=false`.
+## Important limits on Vercel
+
+- **MongoDB** must be Atlas (not `localhost`)
+- **Uploads** (`/uploads/cms`) and **CMS file writes** (`data/site.json`) are ephemeral on serverless — fine for read of seeded content; for lasting media/CMS edits, add R2/S3 later
+- After Cloudflare is live, set `CORS_ORIGINS` to that exact origin (no trailing slash)
