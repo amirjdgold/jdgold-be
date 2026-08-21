@@ -7,15 +7,20 @@ import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { connectDb } from './db/connect.js';
 import pagesRouter from './routes/pages.js';
+import {
+  blobUploadsEnabled,
+  handleBlobMediaUpload,
+} from './services/blob-media.js';
+import {
+  getSiteContent,
+  readSiteContentSeed,
+  saveSiteContent,
+} from './services/site-content.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const IS_VERCEL = Boolean(process.env.VERCEL);
-const DATA_PATH = path.join(__dirname, '..', 'data', 'site.json');
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
-/** On Vercel the deploy FS is read-only; use /tmp (ephemeral — prefer object storage later). */
-const CMS_UPLOAD_DIR = IS_VERCEL
-  ? path.join('/tmp', 'uploads', 'cms')
-  : path.join(__dirname, '..', 'uploads', 'cms');
+const CMS_UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'cms');
 /** Optional local SPA folder when SERVE_STATIC=true (no longer tied to a monorepo). */
 const FRONTEND_DIST = process.env.FRONTEND_DIST
   ? path.resolve(process.env.FRONTEND_DIST)
@@ -526,16 +531,6 @@ function applyEnvFromString(text) {
   }
 }
 
-async function readSiteContent() {
-  const raw = await fs.readFile(DATA_PATH, 'utf8');
-  return JSON.parse(raw);
-}
-
-async function writeSiteContent(data) {
-  await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
-  await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2) + '\n', 'utf8');
-}
-
 function requireApiKey(req, res, next) {
   const key = process.env.API_KEY;
   if (!key) {
@@ -554,7 +549,9 @@ async function createApp() {
   if (!IS_VERCEL) {
     await applyEnvFromString(await loadEnvFile());
   }
-  await fs.mkdir(CMS_UPLOAD_DIR, { recursive: true });
+  if (!IS_VERCEL) {
+    await fs.mkdir(CMS_UPLOAD_DIR, { recursive: true });
+  }
   await connectDb();
 
   const app = express();
@@ -608,15 +605,48 @@ async function createApp() {
 
   app.get('/api/content', async (_req, res) => {
     try {
-      const data = await readSiteContent();
+      const data = await getSiteContent();
       res.json(data);
     } catch (e) {
       console.error(e);
-      res.status(500).json({ error: 'Failed to read content' });
+      try {
+        res.json(await readSiteContentSeed());
+      } catch (seedError) {
+        console.error(seedError);
+        res.status(500).json({ error: 'Failed to read content' });
+      }
+    }
+  });
+
+  app.get('/api/media/upload-mode', requireApiKey, (_req, res) => {
+    if (blobUploadsEnabled()) {
+      return res.json({ mode: 'blob', maxSize: 100 * 1024 * 1024 });
+    }
+    if (!IS_VERCEL) {
+      return res.json({ mode: 'local', maxSize: 100 * 1024 * 1024 });
+    }
+    return res.status(503).json({
+      error: 'BLOB_READ_WRITE_TOKEN is not configured',
+    });
+  });
+
+  app.post('/api/media/blob', requireApiKey, async (req, res) => {
+    try {
+      res.json(await handleBlobMediaUpload(req));
+    } catch (error) {
+      console.error('Blob upload authorization failed', error);
+      res.status(error.statusCode || 400).json({
+        error: error.message || 'Failed to authorize Blob upload',
+      });
     }
   });
 
   app.post('/api/media', requireApiKey, (req, res) => {
+    if (IS_VERCEL || blobUploadsEnabled()) {
+      return res.status(409).json({
+        error: 'Use the browser-direct Blob upload flow',
+      });
+    }
     upload.single('file')(req, res, async (err) => {
       if (err) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -707,10 +737,11 @@ async function createApp() {
       });
     }
     try {
-      const existing = await readSiteContent().catch(() => ({}));
+      const existing = await getSiteContent().catch(() =>
+        readSiteContentSeed(),
+      );
       const merged = mergeSiteContent(existing, parsed.data);
-      await writeSiteContent(merged);
-      res.json(merged);
+      res.json(await saveSiteContent(merged));
     } catch (e) {
       console.error(e);
       res.status(500).json({ error: 'Failed to save content' });
@@ -721,7 +752,13 @@ async function createApp() {
     res.sendFile(path.join(PUBLIC_DIR, 'admin.html'));
   });
 
-  app.use('/uploads/cms', express.static(CMS_UPLOAD_DIR));
+  app.get('/admin-upload.js', (_req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'admin-upload.js'));
+  });
+
+  if (!IS_VERCEL) {
+    app.use('/uploads/cms', express.static(CMS_UPLOAD_DIR));
+  }
 
   const serveStatic =
     process.env.SERVE_STATIC === 'true' || process.env.SERVE_STATIC === '1';
