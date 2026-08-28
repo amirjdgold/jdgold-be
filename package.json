@@ -5,15 +5,24 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "server": "node src/index.js",
+    "server:dev": "nodemon src/index.js",
+    "dev": "nodemon src/index.js",
     "start:static": "SERVE_STATIC=true node src/index.js",
-    "seed:pages": "node src/scripts/seed-pages.js"
+    "seed": "node src/scripts/seed.js",
+    "seed:clear": "node src/scripts/seed.js --clear",
+    "seed:pages": "node src/scripts/seed.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "mongoose": "^9.9.1",
     "multer": "^2.1.1",
     "sharp": "^0.34.5",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
   }
 }
