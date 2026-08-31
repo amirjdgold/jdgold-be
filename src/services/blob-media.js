@@ -1,5 +1,6 @@
 import path from 'path';
 import { handleUpload } from '@vercel/blob/client';
+import { upsertMediaAsset } from './mediaService.js';
 
 export const MAX_MEDIA_SIZE = 100 * 1024 * 1024;
 export const ALLOWED_MEDIA_TYPES = ['image/*', 'video/*'];
@@ -21,7 +22,7 @@ export function blobUploadsEnabled() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
-function parseClientPayload(clientPayload) {
+export function parseClientPayload(clientPayload) {
   try {
     return JSON.parse(clientPayload || '{}');
   } catch {
@@ -29,7 +30,7 @@ function parseClientPayload(clientPayload) {
   }
 }
 
-function validateUploadRequest(pathname, clientPayload) {
+export function validateUploadRequest(pathname, clientPayload) {
   if (!/^cms\/[a-zA-Z0-9][a-zA-Z0-9._-]{0,199}$/.test(pathname)) {
     throw new Error('Invalid media pathname');
   }
@@ -49,6 +50,24 @@ function validateUploadRequest(pathname, clientPayload) {
   }
 }
 
+function assertUploadAuthorization(req) {
+  const expected = process.env.API_KEY;
+  if (!expected) {
+    const error = new Error('API_KEY is not configured');
+    error.statusCode = 503;
+    throw error;
+  }
+  const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
+  const headerKey = req.headers['x-api-key'];
+  const provided =
+    bearer || (typeof headerKey === 'string' ? headerKey.trim() : '');
+  if (provided !== expected) {
+    const error = new Error('Unauthorized');
+    error.statusCode = 401;
+    throw error;
+  }
+}
+
 export async function handleBlobMediaUpload(req) {
   if (!blobUploadsEnabled()) {
     const error = new Error('Blob storage is not configured');
@@ -61,14 +80,37 @@ export async function handleBlobMediaUpload(req) {
     body: req.body,
     token: process.env.BLOB_READ_WRITE_TOKEN,
     onBeforeGenerateToken: async (pathname, clientPayload) => {
+      assertUploadAuthorization(req);
       validateUploadRequest(pathname, clientPayload);
+      const metadata = parseClientPayload(clientPayload);
       return {
         allowedContentTypes: ALLOWED_MEDIA_TYPES,
         maximumSizeInBytes: MAX_MEDIA_SIZE,
         addRandomSuffix: false,
         allowOverwrite: false,
         validUntil: Date.now() + 10 * 60 * 1000,
+        tokenPayload: JSON.stringify({
+          mimeType: metadata.mimeType,
+          size: metadata.size,
+          category: metadata.category || 'general',
+          alt: metadata.alt || '',
+        }),
       };
+    },
+    onUploadCompleted: async ({ blob, tokenPayload }) => {
+      const metadata = parseClientPayload(tokenPayload);
+      await upsertMediaAsset({
+        pathname: blob.pathname,
+        url: blob.url,
+        mimeType:
+          blob.contentType ||
+          metadata.mimeType ||
+          'application/octet-stream',
+        size: blob.size ?? metadata.size ?? 0,
+        category: metadata.category || 'general',
+        alt: metadata.alt || '',
+        caption: '',
+      });
     },
   });
 }

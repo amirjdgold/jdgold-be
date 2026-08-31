@@ -744,6 +744,56 @@
       padding-top: 0.85rem;
       border-top: 1px solid var(--border);
     }
+    textarea {
+      width: 100%;
+      min-height: 26rem;
+      padding: 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      font: 0.8rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+      resize: vertical;
+    }
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+    }
+    .media-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--panel);
+      min-width: 0;
+    }
+    .media-card-preview {
+      aspect-ratio: 16 / 10;
+      background: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .media-card-preview img,
+    .media-card-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .media-card-body { padding: 0.65rem; }
+    .media-card-path {
+      font-size: 0.72rem;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+      margin-bottom: 0.5rem;
+    }
+    .media-picker-button {
+      margin: -0.4rem 0 0.65rem;
+      padding: 0.3rem 0.55rem;
+      font-size: 0.72rem;
+    }
+    #mediaPickerModal .crop-modal-panel { width: min(1100px, 100%); }
   </style>
 </head>
 <body>
@@ -811,6 +861,8 @@
             <button type="button" class="nav-item" data-view="global-shipping">Global Shipping</button>
             <button type="button" class="nav-item" data-view="get-in-touch">Get in Touch</button>
           </div>
+          <button type="button" class="nav-item" data-view="pages">Pages</button>
+          <button type="button" class="nav-item" data-view="media">Media library</button>
           <button type="button" class="nav-item" data-view="settings">Settings</button>
         </aside>
         <div class="admin-content">
@@ -857,6 +909,16 @@
                   </span>
                 </span>
               </h2>
+              <div class="row" style="margin-bottom:0.75rem">
+                <select id="bannerSelect" aria-label="Banner" style="max-width:280px;margin:0"></select>
+                <button type="button" class="secondary" id="btnNewBanner">New banner</button>
+                <button type="button" class="danger" id="btnDeleteBanner">Delete banner</button>
+              </div>
+              <div class="row" style="margin-bottom:0.75rem">
+                <input id="bannerTitle" type="text" placeholder="Banner title" style="max-width:280px;margin:0" />
+                <label><input id="bannerActive" type="checkbox" checked /> Active</label>
+                <input id="bannerOrder" type="number" min="0" value="0" aria-label="Banner order" style="width:90px" />
+              </div>
               <div class="row" style="margin-bottom:0.75rem">
                 <button
                   type="button"
@@ -1007,6 +1069,51 @@
             </section>
           </div>
 
+          <div id="view-pages" class="view-panel hidden">
+            <section>
+              <h2>Page editor</h2>
+              <p class="hint">Select any active or inactive page. JSON is validated by the existing page API.</p>
+              <div class="row">
+                <select id="pageSelect" style="max-width:340px"></select>
+                <button type="button" class="secondary" id="btnReloadPages">Reload</button>
+                <button type="button" class="secondary" id="btnNewPage">New page</button>
+                <button type="button" class="secondary" id="btnPageMedia">Insert media URL</button>
+                <button type="button" id="btnSavePage">Save page</button>
+                <button type="button" class="danger" id="btnDeletePage">Delete page</button>
+              </div>
+              <textarea id="pageJson" spellcheck="false"></textarea>
+            </section>
+          </div>
+
+          <div id="view-media" class="view-panel hidden">
+            <section>
+              <h2>Media library</h2>
+              <div class="row">
+                <label class="pick-label">Upload media…
+                  <input type="file" id="mediaUpload" accept="image/*,video/*" multiple />
+                </label>
+                <input id="mediaSearch" type="text" placeholder="Search filename, alt or caption" style="max-width:300px;margin:0" />
+                <select id="mediaCategory" style="max-width:150px;margin:0">
+                  <option value="">All categories</option>
+                  <option>general</option><option>hero</option><option>logo</option>
+                  <option>portrait</option><option>gallery</option><option>video</option>
+                </select>
+                <select id="mediaKind" style="max-width:130px;margin:0">
+                  <option value="">Images + videos</option>
+                  <option value="image">Images</option>
+                  <option value="video">Videos</option>
+                </select>
+                <button type="button" class="secondary" id="btnMediaSearch">Search</button>
+              </div>
+              <div id="mediaGrid" class="media-grid"></div>
+              <div class="row" style="margin-top:0.8rem">
+                <button type="button" class="secondary" id="btnMediaPrev">Previous</button>
+                <span id="mediaPageInfo" class="hint"></span>
+                <button type="button" class="secondary" id="btnMediaNext">Next</button>
+              </div>
+            </section>
+          </div>
+
           <div id="view-settings" class="view-panel hidden">
             <p class="hint">
               Logo and hero titles: use <strong>Choose logo…</strong> to upload (stored under
@@ -1068,6 +1175,19 @@
         <button type="button" id="slideCropConfirm">Use cropped image</button>
         <button type="button" class="hidden" id="slideCropVideoUpload">Upload this video</button>
       </div>
+    </div>
+  </div>
+
+  <div id="mediaPickerModal" class="crop-modal hidden" aria-hidden="true">
+    <div class="crop-modal-backdrop" id="mediaPickerBackdrop"></div>
+    <div class="crop-modal-panel" role="dialog" aria-modal="true" aria-labelledby="mediaPickerTitle">
+      <h2 id="mediaPickerTitle">Choose from media library</h2>
+      <div class="row">
+        <input id="pickerSearch" type="text" placeholder="Search media" style="max-width:300px;margin:0" />
+        <button type="button" class="secondary" id="btnPickerSearch">Search</button>
+        <button type="button" class="secondary" id="btnPickerClose">Close</button>
+      </div>
+      <div id="pickerGrid" class="media-grid"></div>
     </div>
   </div>
 
@@ -3448,6 +3568,13 @@
     }
 
     let site = null;
+    let banners = [];
+    let selectedBannerId = '';
+    let pages = [];
+    let mediaPage = 1;
+    let mediaPages = 1;
+    let mediaPickerTarget = null;
+    let legacyHeroVideoSlides = [];
 
     /** Hero center tile: ~2.3–3.4:1 matches typical + wide layouts with object-contain */
     const ASPECT_GOOD_MIN = 2.3;
@@ -3765,12 +3892,209 @@
       };
     }
 
+    async function apiData(url, options) {
+      const r = await fetch(url, options);
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(body.message || body.error || 'Request failed');
+      return body.data;
+    }
+
+    function selectedBanner() {
+      return banners.find((banner) => String(banner._id) === selectedBannerId);
+    }
+
+    function renderBannerControls() {
+      const select = el('bannerSelect');
+      select.innerHTML = '';
+      banners.forEach((banner) => {
+        const option = document.createElement('option');
+        option.value = String(banner._id);
+        option.textContent = banner.title + (banner.active ? '' : ' (inactive)');
+        select.appendChild(option);
+      });
+      select.value = selectedBannerId;
+      const banner = selectedBanner();
+      el('bannerTitle').value = banner?.title || 'JD Gold Site Banner';
+      el('bannerActive').checked = banner?.active !== false;
+      el('bannerOrder').value = String(banner?.order || 0);
+      el('btnDeleteBanner').disabled = !banner;
+    }
+
+    function applyBannerToSlider(banner) {
+      if (!banner || !Array.isArray(banner.images)) return;
+      site.hero.slides = [...banner.images]
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((image) => ({
+          type: 'image',
+          src: image.url,
+          alt: image.alt || banner.imageAlt || banner.title || 'JD Gold',
+        }));
+      renderSlides();
+    }
+
+    async function loadBanners() {
+      banners = await apiData('/api/banner/admin/all', { headers: authHeaders() });
+      const preferred = banners.find((banner) => banner.active) || banners[0];
+      selectedBannerId = preferred ? String(preferred._id) : '';
+      renderBannerControls();
+      if (preferred) applyBannerToSlider(preferred);
+    }
+
+    async function saveBannerFromHero() {
+      const imageSlides = site.hero.slides.filter((slide) => slide.type !== 'video');
+      if (!imageSlides.length) {
+        throw new Error('The live banner needs at least one image slide.');
+      }
+      const banner = selectedBanner();
+      const payload = {
+        title: el('bannerTitle').value.trim() || 'JD Gold Site Banner',
+        active: el('bannerActive').checked,
+        order: Math.max(0, Number(el('bannerOrder').value) || 0),
+        imageAlt: '',
+        link: banner?.link || '',
+        images: imageSlides.map((slide, order) => ({
+          url: String(slide.src || '').trim(),
+          alt: String(slide.alt || '').trim(),
+          caption: '',
+          order,
+        })),
+      };
+      const url = banner ? '/api/banner/' + banner._id : '/api/banner';
+      const saved = await apiData(url, {
+        method: banner ? 'PUT' : 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      });
+      if (banner) {
+        banners = banners.map((item) => String(item._id) === String(saved._id) ? saved : item);
+      } else {
+        banners.push(saved);
+      }
+      selectedBannerId = String(saved._id);
+      renderBannerControls();
+      return site.hero.slides.length - imageSlides.length;
+    }
+
+    async function loadPages() {
+      pages = await apiData('/api/pages/admin/all', { headers: authHeaders() });
+      const select = el('pageSelect');
+      const previous = select.value;
+      select.innerHTML = '';
+      pages.forEach((page) => {
+        const option = document.createElement('option');
+        option.value = String(page._id);
+        option.textContent = page.title + (page.isActive ? '' : ' (inactive)');
+        select.appendChild(option);
+      });
+      if (pages.some((page) => String(page._id) === previous)) select.value = previous;
+      renderSelectedPage();
+    }
+
+    function renderSelectedPage() {
+      const page = pages.find((item) => String(item._id) === el('pageSelect').value);
+      el('pageJson').value = page ? JSON.stringify(page, null, 2) : '';
+      installMediaPickerButtons(el('view-pages'));
+    }
+
+    async function saveSelectedPage() {
+      const current = pages.find((item) => String(item._id) === el('pageSelect').value);
+      if (!current) throw new Error('Choose a page first.');
+      const parsed = JSON.parse(el('pageJson').value);
+      delete parsed._id;
+      delete parsed.__v;
+      delete parsed.createdAt;
+      delete parsed.updatedAt;
+      const isNew = current._id === 'new';
+      await apiData(isNew ? '/api/pages' : '/api/pages/' + current._id, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(parsed),
+      });
+      await loadPages();
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function mediaCardHtml(asset, picker) {
+      const preview = asset.mimeType.startsWith('video/')
+        ? '<video src="' + escapeHtml(asset.url) + '" controls muted preload="metadata"></video>'
+        : '<img src="' + escapeHtml(asset.url) + '" alt="' + escapeHtml(asset.alt) + '" loading="lazy" />';
+      return '<article class="media-card" data-media-id="' + asset._id + '">' +
+        '<div class="media-card-preview">' + preview + '</div>' +
+        '<div class="media-card-body"><div class="media-card-path">' + escapeHtml(asset.pathname) + '</div>' +
+        (picker
+          ? '<button type="button" data-media-use="' + escapeHtml(asset.url) + '">Use this asset</button>'
+          : '<label>Alt</label><input type="text" data-media-alt value="' + escapeHtml(asset.alt) + '" />' +
+            '<label>Caption</label><input type="text" data-media-caption value="' + escapeHtml(asset.caption) + '" />' +
+            '<label>Category</label><select data-media-category>' +
+            ['general','hero','logo','portrait','gallery','video'].map((category) =>
+              '<option' + (asset.category === category ? ' selected' : '') + '>' + category + '</option>'
+            ).join('') + '</select>' +
+            '<div class="row"><button type="button" class="secondary" data-media-save>Save metadata</button>' +
+            '<button type="button" class="danger" data-media-delete>Delete</button></div>') +
+        '</div></article>';
+    }
+
+    async function loadMedia(picker) {
+      const search = picker ? el('pickerSearch').value.trim() : el('mediaSearch').value.trim();
+      const params = new URLSearchParams({
+        page: picker ? '1' : String(mediaPage),
+        limit: picker ? '50' : '24',
+      });
+      if (search) params.set('search', search);
+      if (!picker && el('mediaCategory').value) params.set('category', el('mediaCategory').value);
+      if (!picker && el('mediaKind').value) params.set('kind', el('mediaKind').value);
+      const data = await apiData('/api/media-assets?' + params, { headers: authHeaders() });
+      const grid = picker ? el('pickerGrid') : el('mediaGrid');
+      grid.innerHTML = data.items.map((asset) => mediaCardHtml(asset, picker)).join('');
+      if (!picker) {
+        mediaPages = data.pagination.pages;
+        el('mediaPageInfo').textContent = 'Page ' + data.pagination.page + ' of ' + mediaPages +
+          ' · ' + data.pagination.total + ' assets';
+        el('btnMediaPrev').disabled = mediaPage <= 1;
+        el('btnMediaNext').disabled = mediaPage >= mediaPages;
+      }
+    }
+
+    function openMediaPicker(target) {
+      mediaPickerTarget = target;
+      el('mediaPickerModal').classList.remove('hidden');
+      el('mediaPickerModal').setAttribute('aria-hidden', 'false');
+      loadMedia(true).catch((error) => showMsg(error.message, 'bad'));
+    }
+
+    function closeMediaPicker() {
+      mediaPickerTarget = null;
+      el('mediaPickerModal').classList.add('hidden');
+      el('mediaPickerModal').setAttribute('aria-hidden', 'true');
+    }
+
+    function installMediaPickerButtons(root) {
+      (root || document).querySelectorAll('input[type="text"]').forEach((input) => {
+        if (input.dataset.mediaPickerReady || input.closest('#view-media') || input.closest('#mediaPickerModal')) return;
+        const hint = (input.placeholder + ' ' + input.value).toLowerCase();
+        if (!/(\/images\/|\/videos\/|\/uploads\/|https?:|path|url)/.test(hint)) return;
+        input.dataset.mediaPickerReady = '1';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'secondary media-picker-button';
+        button.textContent = 'Choose from library';
+        button.addEventListener('click', () => openMediaPicker(input));
+        input.insertAdjacentElement('afterend', button);
+      });
+    }
+
     async function loadSite() {
       const r = await fetch('/api/content');
       if (!r.ok) throw new Error('Failed to load content');
       site = await r.json();
       if (!site.hero) site.hero = { slides: [], branding: {} };
       if (!Array.isArray(site.hero.slides)) site.hero.slides = [];
+      legacyHeroVideoSlides = site.hero.slides.filter((slide) => slide.type === 'video');
       if (!site.hero.branding) site.hero.branding = {};
       if (!site.teamManagement) site.teamManagement = { members: [] };
       if (!Array.isArray(site.teamManagement.members)) {
@@ -3779,6 +4103,8 @@
       ensureHomeRightGallery();
       ensureWhyChooseSection();
       fillForm();
+      await Promise.all([loadBanners(), loadPages()]);
+      installMediaPickerButtons(editor);
     }
 
     function fillForm() {
@@ -4353,7 +4679,11 @@
       if (!branding.logoSrc || !branding.title || !branding.subtitle) {
         throw new Error('Logo URL, title, and subtitle are required.');
       }
-      const slides = site.hero.slides.map((s) => {
+      const sourceSlides = [...site.hero.slides];
+      legacyHeroVideoSlides.forEach((legacy) => {
+        if (!sourceSlides.some((slide) => slide.src === legacy.src)) sourceSlides.push(legacy);
+      });
+      const slides = sourceSlides.map((s) => {
         const type = s.type === 'video' ? 'video' : 'image';
         if (type === 'video') return { type: 'video', src: (s.src || '').trim() };
         const im = {
@@ -4441,8 +4771,20 @@
         return;
       }
       site = await r.json();
+      let legacyVideoCount = 0;
+      try {
+        legacyVideoCount = await saveBannerFromHero();
+      } catch (error) {
+        showMsg('Site content saved, but live banner failed: ' + error.message, 'bad');
+        return;
+      }
       fillForm();
-      showMsg('Saved.', 'ok');
+      showMsg(
+        legacyVideoCount
+          ? 'Saved. Video slides remain in legacy content; the live GlobalBanner uses image slides.'
+          : 'Saved.',
+        'ok'
+      );
     }
 
     function setAdminView(view) {
@@ -4458,6 +4800,8 @@
       const miningExtraction = el('view-mining-extraction');
       const globalShipping = el('view-global-shipping');
       const getInTouch = el('view-get-in-touch');
+      const pagesView = el('view-pages');
+      const mediaView = el('view-media');
       const settings = el('view-settings');
       if (
         !slider ||
@@ -4472,6 +4816,8 @@
         !miningExtraction ||
         !globalShipping ||
         !getInTouch ||
+        !pagesView ||
+        !mediaView ||
         !settings
       )
         return;
@@ -4487,14 +4833,20 @@
       miningExtraction.classList.toggle('hidden', view !== 'mining-extraction');
       globalShipping.classList.toggle('hidden', view !== 'global-shipping');
       getInTouch.classList.toggle('hidden', view !== 'get-in-touch');
+      pagesView.classList.toggle('hidden', view !== 'pages');
+      mediaView.classList.toggle('hidden', view !== 'media');
       settings.classList.toggle('hidden', view !== 'settings');
       document.querySelectorAll('#editor .nav-item').forEach((btn) => {
         btn.classList.toggle('active', btn.getAttribute('data-view') === view);
       });
       const homeNavParent = el('homeNavParent');
       if (homeNavParent) {
-        homeNavParent.classList.toggle('active-parent', view !== 'settings');
+        homeNavParent.classList.toggle(
+          'active-parent',
+          !['settings', 'pages', 'media'].includes(view)
+        );
       }
+      if (view === 'media') loadMedia(false).catch((error) => showMsg(error.message, 'bad'));
     }
 
     function showEditor() {
@@ -4679,6 +5031,174 @@
       getInTouchRoot.addEventListener('input', onGetInTouchInput);
       getInTouchRoot.addEventListener('change', onGetInTouchFileChange);
     }
+
+    el('bannerSelect').addEventListener('change', (event) => {
+      selectedBannerId = event.target.value;
+      renderBannerControls();
+      applyBannerToSlider(selectedBanner());
+    });
+    el('btnNewBanner').addEventListener('click', () => {
+      selectedBannerId = '';
+      site.hero.slides = [];
+      renderBannerControls();
+      renderSlides();
+    });
+    el('btnDeleteBanner').addEventListener('click', async () => {
+      const banner = selectedBanner();
+      if (!banner || !confirm('Delete this banner document? Media files are not deleted.')) return;
+      try {
+        await apiData('/api/banner/' + banner._id, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        await loadBanners();
+        showMsg('Banner deleted.', 'ok');
+      } catch (error) {
+        showMsg(error.message, 'bad');
+      }
+    });
+
+    el('pageSelect').addEventListener('change', renderSelectedPage);
+    el('btnReloadPages').addEventListener('click', () =>
+      loadPages().catch((error) => showMsg(error.message, 'bad'))
+    );
+    el('btnNewPage').addEventListener('click', () => {
+      pages.unshift({
+        _id: 'new',
+        title: 'New page',
+        slug: 'new-page',
+        pageType: 'custom',
+        metaTitle: '',
+        metaDescription: '',
+        hero: {},
+        sections: [],
+        isActive: false,
+        sortOrder: 0,
+      });
+      const select = el('pageSelect');
+      const option = document.createElement('option');
+      option.value = 'new';
+      option.textContent = 'New page (unsaved)';
+      select.prepend(option);
+      select.value = 'new';
+      renderSelectedPage();
+    });
+    el('btnPageMedia').addEventListener('click', () => openMediaPicker(el('pageJson')));
+    el('btnSavePage').addEventListener('click', () =>
+      saveSelectedPage()
+        .then(() => showMsg('Page saved.', 'ok'))
+        .catch((error) => showMsg(error.message, 'bad'))
+    );
+    el('btnDeletePage').addEventListener('click', async () => {
+      const current = pages.find((item) => String(item._id) === el('pageSelect').value);
+      if (!current) return;
+      if (current._id === 'new') {
+        await loadPages();
+        return;
+      }
+      if (!confirm('Delete this page document?')) return;
+      try {
+        await apiData('/api/pages/' + current._id, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        await loadPages();
+        showMsg('Page deleted.', 'ok');
+      } catch (error) {
+        showMsg(error.message, 'bad');
+      }
+    });
+
+    el('btnMediaSearch').addEventListener('click', () => {
+      mediaPage = 1;
+      loadMedia(false).catch((error) => showMsg(error.message, 'bad'));
+    });
+    el('mediaSearch').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') el('btnMediaSearch').click();
+    });
+    el('btnMediaPrev').addEventListener('click', () => {
+      if (mediaPage > 1) mediaPage -= 1;
+      loadMedia(false).catch((error) => showMsg(error.message, 'bad'));
+    });
+    el('btnMediaNext').addEventListener('click', () => {
+      if (mediaPage < mediaPages) mediaPage += 1;
+      loadMedia(false).catch((error) => showMsg(error.message, 'bad'));
+    });
+    el('mediaUpload').addEventListener('change', async (event) => {
+      const files = [...(event.target.files || [])];
+      event.target.value = '';
+      try {
+        for (const file of files) {
+          const form = new FormData();
+          form.append('file', file);
+          const response = await fetch('/api/media?category=general', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + getKey() },
+            body: form,
+          });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(body.message || body.error || 'Upload failed');
+        }
+        mediaPage = 1;
+        await loadMedia(false);
+        showMsg(files.length + ' media file(s) uploaded.', 'ok');
+      } catch (error) {
+        showMsg(error.message, 'bad');
+      }
+    });
+    el('mediaGrid').addEventListener('click', async (event) => {
+      const card = event.target.closest('[data-media-id]');
+      if (!card) return;
+      const id = card.dataset.mediaId;
+      try {
+        if (event.target.closest('[data-media-save]')) {
+          await apiData('/api/media-assets/' + id, {
+            method: 'PATCH',
+            headers: authHeaders(),
+            body: JSON.stringify({
+              alt: card.querySelector('[data-media-alt]').value,
+              caption: card.querySelector('[data-media-caption]').value,
+              category: card.querySelector('[data-media-category]').value,
+            }),
+          });
+          showMsg('Media metadata saved.', 'ok');
+        }
+        if (event.target.closest('[data-media-delete]')) {
+          if (!confirm('Delete this file? Referenced media cannot be deleted.')) return;
+          await apiData('/api/media-assets/' + id, {
+            method: 'DELETE',
+            headers: authHeaders(),
+          });
+          await loadMedia(false);
+          showMsg('Media deleted.', 'ok');
+        }
+      } catch (error) {
+        showMsg(error.message, 'bad');
+      }
+    });
+
+    el('btnPickerSearch').addEventListener('click', () =>
+      loadMedia(true).catch((error) => showMsg(error.message, 'bad'))
+    );
+    el('btnPickerClose').addEventListener('click', closeMediaPicker);
+    el('mediaPickerBackdrop').addEventListener('click', closeMediaPicker);
+    el('pickerGrid').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-media-use]');
+      if (!button || !mediaPickerTarget) return;
+      const url = button.dataset.mediaUse;
+      if (mediaPickerTarget instanceof HTMLTextAreaElement) {
+        const start = mediaPickerTarget.selectionStart;
+        const end = mediaPickerTarget.selectionEnd;
+        mediaPickerTarget.setRangeText(JSON.stringify(url), start, end, 'end');
+      } else {
+        mediaPickerTarget.value = url;
+        mediaPickerTarget.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      closeMediaPicker();
+    });
+
+    const pickerObserver = new MutationObserver(() => installMediaPickerButtons(editor));
+    pickerObserver.observe(editor, { childList: true, subtree: true });
 
     (async function init() {
       if (!getKey()) return;

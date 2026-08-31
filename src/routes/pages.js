@@ -14,6 +14,12 @@ const router = Router();
 
 router.get('/', asyncHandler(pagesController.listPages));
 
+router.get(
+  '/admin/all',
+  requireApiKey,
+  asyncHandler(pagesController.listAllPages)
+);
+
 router.post(
   '/',
   requireApiKey,

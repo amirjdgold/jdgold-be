@@ -15,10 +15,12 @@ import {
 import { requireApiKey } from './middleware/requireApiKey.js';
 import pagesRouter from './routes/pages.js';
 import bannerRouter from './routes/banner.js';
+import mediaRouter from './routes/media.js';
 import {
   blobUploadsEnabled,
   handleBlobMediaUpload,
 } from './services/blob-media.js';
+import { upsertMediaAsset } from './services/mediaService.js';
 import {
   getSiteContent,
   readSiteContentSeed,
@@ -56,6 +58,28 @@ const PORTRAIT_IMAGE_MAX_H = 800;
 /** Home right column gallery thumbnails (wide cover crop) */
 const GALLERY_THUMB_W = 720;
 const GALLERY_THUMB_H = 360;
+
+async function registerLocalAsset(filename, mimeType, category) {
+  const absolute = path.join(CMS_UPLOAD_DIR, filename);
+  const stat = await fs.stat(absolute);
+  let dimensions;
+  if (mimeType.startsWith('image/') && mimeType !== 'image/svg+xml') {
+    const metadata = await sharp(absolute, { failOn: 'none' })
+      .metadata()
+      .catch(() => null);
+    if (metadata?.width && metadata?.height) {
+      dimensions = { width: metadata.width, height: metadata.height };
+    }
+  }
+  return upsertMediaAsset({
+    pathname: `uploads/cms/${filename}`,
+    url: `/uploads/cms/${filename}`,
+    mimeType,
+    size: stat.size,
+    dimensions,
+    category,
+  });
+}
 
 function shouldOptimizeRasterImage(mimetype) {
   if (!mimetype || !mimetype.startsWith('image/')) return false;
@@ -540,6 +564,7 @@ async function createApp() {
 
   app.use('/api/pages', pagesRouter);
   app.use('/api/banner', bannerRouter);
+  app.use('/api/media-assets', mediaRouter);
 
   app.get('/api/content', async (_req, res) => {
     try {
@@ -568,7 +593,7 @@ async function createApp() {
     });
   });
 
-  app.post('/api/media/blob', requireApiKey, async (req, res) => {
+  app.post('/api/media/blob', async (req, res) => {
     try {
       res.json(await handleBlobMediaUpload(req));
     } catch (error) {
@@ -662,6 +687,29 @@ async function createApp() {
         }
       }
       const url = `/uploads/cms/${filename}`;
+      const requestedCategory = ['general', 'hero', 'logo', 'portrait', 'gallery', 'video']
+        .includes(req.query.category)
+        ? req.query.category
+        : null;
+      const category = requestedCategory || (logoOnly
+        ? 'logo'
+        : portraitOnly
+          ? 'portrait'
+          : galleryOnly
+            ? 'gallery'
+            : mimeType.startsWith('video/')
+              ? 'video'
+              : 'hero');
+      try {
+        await registerLocalAsset(filename, mimeType, category);
+        for (const extraUrl of Object.values(extraUrls)) {
+          const extraFilename = extraUrl.split('/').pop();
+          await registerLocalAsset(extraFilename, 'image/webp', category);
+        }
+      } catch (registrationError) {
+        console.error('Local media registration failed', registrationError);
+        return res.status(500).json({ error: 'Upload registration failed' });
+      }
       res.json({ url, mimeType, ...extraUrls });
     });
   });

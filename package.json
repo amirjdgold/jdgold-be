@@ -17,7 +17,9 @@
     "seed:pages": "node src/scripts/seed.js",
     "build:admin-upload": "esbuild src/browser/admin-upload.js --bundle --minify --platform=browser --target=es2020 --outfile=public/admin-upload.js",
     "migrate:blob": "node src/scripts/migrate-content-to-blob.js",
-    "check": "npm run build:admin-upload && node --check src/index.js && node --check src/scripts/migrate-content-to-blob.js"
+    "migrate:blob:dry-run": "node src/scripts/migrate-content-to-blob.js --dry-run",
+    "test": "node --test",
+    "check": "npm run build:admin-upload && node --check src/index.js && node --check src/scripts/migrate-content-to-blob.js && npm test"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0",

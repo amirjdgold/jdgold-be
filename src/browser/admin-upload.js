@@ -32,6 +32,18 @@ function makeBlobPathname(file) {
   return `cms/${Date.now()}-${random}-${cleaned || 'media'}`;
 }
 
+function categoryForRequest(url, file) {
+  const requested = url.searchParams.get('category');
+  if (['general', 'hero', 'logo', 'portrait', 'gallery', 'video'].includes(requested)) {
+    return requested;
+  }
+  if (url.searchParams.has('logo')) return 'logo';
+  if (url.searchParams.has('portrait')) return 'portrait';
+  if (url.searchParams.has('gallery')) return 'gallery';
+  if ((file.type || '').startsWith('video/')) return 'video';
+  return 'hero';
+}
+
 async function directOrLocalMediaFetch(input, init = {}) {
   const url = mediaRequestUrl(input);
   const method = String(init.method || (input instanceof Request && input.method) || 'GET')
@@ -61,6 +73,7 @@ async function directOrLocalMediaFetch(input, init = {}) {
   }
 
   const requestHeaders = new Headers(init.headers || {});
+  const category = categoryForRequest(url, file);
   const modeResponse = await nativeFetch('/api/media/upload-mode', {
     headers: requestHeaders,
   });
@@ -78,9 +91,29 @@ async function directOrLocalMediaFetch(input, init = {}) {
       clientPayload: JSON.stringify({
         mimeType: file.type,
         size: file.size,
+        category,
+        alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
       }),
       multipart: file.size > 5 * 1024 * 1024,
     });
+    const registration = await nativeFetch('/api/media-assets/register', {
+      method: 'POST',
+      headers: {
+        ...Object.fromEntries(requestHeaders.entries()),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: blob.url,
+        category,
+        alt: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
+      }),
+    });
+    if (!registration.ok) {
+      const detail = await registration.json().catch(() => ({}));
+      throw new Error(
+        detail.message || detail.error || 'Uploaded Blob could not be registered',
+      );
+    }
     return jsonResponse({
       url: blob.url,
       mimeType: blob.contentType || file.type,
@@ -95,3 +128,7 @@ async function directOrLocalMediaFetch(input, init = {}) {
 }
 
 window.fetch = directOrLocalMediaFetch;
+window.JDGMedia = Object.freeze({
+  maxSize: MAX_MEDIA_SIZE,
+  makeBlobPathname,
+});

@@ -57,6 +57,11 @@ const pageSchema = new mongoose.Schema(
       type: [sectionSchema],
       default: [],
     },
+    /** Backward-compatible payload used by legacy page layouts. */
+    content: {
+      type: mongoose.Schema.Types.Mixed,
+      default: undefined,
+    },
     isActive: {
       type: Boolean,
       default: true,

@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { SITE_CONTENT_ID, SiteContent } from '../models/SiteContent.js';
+import { resolveSeedMedia } from './seed-media.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const SITE_CONTENT_SEED_PATH = path.join(
@@ -37,7 +38,7 @@ export async function getSiteContent() {
   }).lean();
   if (existing) return existing.content;
 
-  const seed = await readSiteContentSeed();
+  const seed = await resolveSeedMedia(await readSiteContentSeed());
   const inserted = await SiteContent.findOneAndUpdate(
     { _id: SITE_CONTENT_ID },
     { $setOnInsert: { _id: SITE_CONTENT_ID, content: seed } },

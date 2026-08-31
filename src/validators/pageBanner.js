@@ -158,6 +158,7 @@ export const createPageSchema = z.object({
   metaDescription: z.string().trim().max(320).optional().default(''),
   hero: heroSchema.optional().default({}),
   sections: z.array(sectionSchema).optional().default([]),
+  content: z.record(z.unknown()).optional(),
   isActive: z.boolean().optional().default(true),
   sortOrder: z.number().min(0).optional().default(0),
 });

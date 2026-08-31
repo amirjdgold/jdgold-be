@@ -1,18 +1,41 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createHash } from 'crypto';
 import mongoose from 'mongoose';
+import sharp from 'sharp';
 import { list, put } from '@vercel/blob';
 import { connectDb } from '../db/connect.js';
+import { MediaAsset } from '../models/MediaAsset.js';
+import { SiteContent } from '../models/SiteContent.js';
+import { Page } from '../models/Page.js';
+import { GlobalBanner } from '../models/GlobalBanner.js';
 import {
-  SITE_CONTENT_ID,
-  SiteContent,
-} from '../models/SiteContent.js';
-import { readSiteContentSeed } from '../services/site-content.js';
+  collectMediaReferences,
+  rewriteMediaReferences,
+} from '../utils/media-references.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.join(__dirname, '..', '..');
-const UPLOAD_DIR = path.join(ROOT_DIR, 'uploads', 'cms');
+const DEFAULT_FRONTEND_PUBLIC = path.resolve(
+  ROOT_DIR,
+  '..',
+  'jdg-web-frontend',
+  'public',
+);
+const DRY_RUN = process.argv.includes('--dry-run');
+const MIME_TYPES = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.m4v': 'video/x-m4v',
+};
 
 async function loadEnv() {
   try {
@@ -27,147 +50,239 @@ async function loadEnv() {
       if (
         (value.startsWith('"') && value.endsWith('"')) ||
         (value.startsWith("'") && value.endsWith("'"))
-      ) {
-        value = value.slice(1, -1);
-      }
+      ) value = value.slice(1, -1);
       if (process.env[key] === undefined) process.env[key] = value;
     }
   } catch {
-    // A .env file is optional when variables are supplied by the environment.
+    // Environment variables may be supplied by the process.
   }
 }
 
-function contentTypeFor(filename) {
-  const types = {
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.gif': 'image/gif',
-    '.webp': 'image/webp',
-    '.svg': 'image/svg+xml',
-    '.mp4': 'video/mp4',
-    '.webm': 'video/webm',
-    '.mov': 'video/quicktime',
-    '.m4v': 'video/x-m4v',
-  };
-  return types[path.extname(filename).toLowerCase()];
-}
-
-async function existingBlobUrls(token) {
-  const urls = new Map();
-  let cursor;
-  do {
-    const page = await list({ prefix: 'cms/', cursor, token });
-    for (const blob of page.blobs) {
-      const filename = blob.pathname.slice('cms/'.length);
-      if (filename && !filename.includes('/')) urls.set(filename, blob.url);
-    }
-    cursor = page.hasMore ? page.cursor : undefined;
-  } while (cursor);
-  return urls;
-}
-
-function replaceUploadReferences(value, urls, stats) {
-  if (typeof value === 'string') {
-    return value.replace(
-      /\/uploads\/cms\/([^"'?#\s)]+)/g,
-      (original, encodedFilename) => {
-        let filename = encodedFilename;
-        try {
-          filename = decodeURIComponent(encodedFilename);
-        } catch {
-          // Keep the original form if it is not valid URI encoding.
-        }
-        const replacement = urls.get(filename);
-        if (!replacement) {
-          stats.unresolved.add(filename);
-          return original;
-        }
-        stats.replaced += 1;
-        return replacement;
-      },
-    );
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => replaceUploadReferences(item, urls, stats));
-  }
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [
-        key,
-        replaceUploadReferences(item, urls, stats),
-      ]),
-    );
-  }
-  return value;
-}
-
-await loadEnv();
-
-const token = process.env.BLOB_READ_WRITE_TOKEN;
-if (!token) throw new Error('BLOB_READ_WRITE_TOKEN is required');
-if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI is required');
-}
-
-await connectDb({ seedPages: false });
-
-try {
-  const urls = await existingBlobUrls(token);
-  const entries = await fs.readdir(UPLOAD_DIR, { withFileTypes: true }).catch(
+async function walk(directory) {
+  const output = [];
+  const entries = await fs.readdir(directory, { withFileTypes: true }).catch(
     (error) => {
       if (error.code === 'ENOENT') return [];
       throw error;
     },
   );
-
-  let uploaded = 0;
   for (const entry of entries) {
-    if (!entry.isFile() || entry.name === '.gitkeep') continue;
-    const contentType = contentTypeFor(entry.name);
-    if (!contentType) {
-      console.warn(`Skipped unsupported file: ${entry.name}`);
-      continue;
+    const absolute = path.join(directory, entry.name);
+    if (entry.isDirectory()) output.push(...(await walk(absolute)));
+    else if (entry.isFile()) output.push(absolute);
+  }
+  return output;
+}
+
+function encodeBlobPart(value) {
+  const normalized = value.split(path.sep).join('/');
+  const extension = path.posix.extname(normalized).toLowerCase();
+  const basename = path.posix.basename(normalized, extension);
+  const directory = path.posix.dirname(normalized);
+  const safeDirectory = directory === '.'
+    ? ''
+    : directory
+        .split('/')
+        .map((part) => part.replace(/[^a-zA-Z0-9._-]+/g, '-'))
+        .join('/') + '/';
+  const safeBasename =
+    basename.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') ||
+    'media';
+  const digest = createHash('sha256').update(normalized).digest('hex').slice(0, 12);
+  return `${safeDirectory}${safeBasename}-${digest}${extension}`;
+}
+
+async function discoverFiles() {
+  const frontendPublic = path.resolve(
+    process.env.FRONTEND_PUBLIC_DIR ||
+      (process.env.FRONTEND_PATH
+        ? path.join(process.env.FRONTEND_PATH, 'public')
+        : DEFAULT_FRONTEND_PUBLIC),
+  );
+  const sources = [
+    {
+      root: path.join(frontendPublic, 'images'),
+      publicPrefix: '/images/',
+      blobPrefix: 'cms/migrated/frontend/images/',
+    },
+    {
+      root: path.join(frontendPublic, 'videos'),
+      publicPrefix: '/videos/',
+      blobPrefix: 'cms/migrated/frontend/videos/',
+    },
+    {
+      root: path.join(ROOT_DIR, 'uploads', 'cms'),
+      publicPrefix: '/uploads/cms/',
+      blobPrefix: 'cms/migrated/backend/',
+    },
+  ];
+  const discovered = [];
+  for (const source of sources) {
+    for (const absolute of await walk(source.root)) {
+      const relative = path.relative(source.root, absolute);
+      const mimeType = MIME_TYPES[path.extname(relative).toLowerCase()];
+      if (!mimeType) continue;
+      discovered.push({
+        absolute,
+        sourcePath: source.publicPrefix + relative.split(path.sep).join('/'),
+        pathname: source.blobPrefix + encodeBlobPart(relative),
+        mimeType,
+      });
     }
-    const blob = await put(
-      `cms/${entry.name}`,
-      await fs.readFile(path.join(UPLOAD_DIR, entry.name)),
-      {
+  }
+  return discovered;
+}
+
+async function existingBlobs(token) {
+  const blobs = new Map();
+  let cursor;
+  do {
+    const page = await list({ prefix: 'cms/', cursor, token });
+    page.blobs.forEach((blob) => blobs.set(blob.pathname, blob));
+    cursor = page.hasMore ? page.cursor : undefined;
+  } while (cursor);
+  return blobs;
+}
+
+async function imageDimensions(file) {
+  if (!file.mimeType.startsWith('image/') || file.mimeType === 'image/svg+xml') {
+    return undefined;
+  }
+  const metadata = await sharp(file.absolute, { failOn: 'none' })
+    .metadata()
+    .catch(() => null);
+  return metadata?.width && metadata?.height
+    ? { width: metadata.width, height: metadata.height }
+    : undefined;
+}
+
+function categoryFor(file) {
+  if (file.mimeType.startsWith('video/')) return 'video';
+  if (/logo/i.test(file.sourcePath)) return 'logo';
+  if (/hero/i.test(file.sourcePath)) return 'hero';
+  return 'general';
+}
+
+async function migrateDocuments(replacements) {
+  const [sites, pages, banners] = await Promise.all([
+    SiteContent.find({}).lean(),
+    Page.find({}).lean(),
+    GlobalBanner.find({}).lean(),
+  ]);
+  const stats = { replaced: 0 };
+  const writes = [];
+  for (const site of sites) {
+    const content = rewriteMediaReferences(site.content, replacements, stats);
+    writes.push(() =>
+      SiteContent.updateOne({ _id: site._id }, { $set: { content } }),
+    );
+  }
+  for (const page of pages) {
+    const hero = rewriteMediaReferences(page.hero, replacements, stats);
+    const sections = rewriteMediaReferences(page.sections, replacements, stats);
+    const content = rewriteMediaReferences(page.content, replacements, stats);
+    writes.push(() =>
+      Page.updateOne({ _id: page._id }, { $set: { hero, sections, content } }),
+    );
+  }
+  for (const banner of banners) {
+    const images = rewriteMediaReferences(banner.images, replacements, stats);
+    writes.push(() =>
+      GlobalBanner.updateOne({ _id: banner._id }, { $set: { images } }),
+    );
+  }
+  if (!DRY_RUN) {
+    for (const write of writes) await write();
+  }
+  return { stats, documents: [...sites, ...pages, ...banners] };
+}
+
+await loadEnv();
+const token = process.env.BLOB_READ_WRITE_TOKEN;
+if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is required');
+
+await connectDb({ seedPages: false });
+try {
+  const files = await discoverFiles();
+  const knownBlobs = token ? await existingBlobs(token) : new Map();
+  const registeredAssets = await MediaAsset.find(
+    { pathname: { $in: files.map((file) => file.pathname) } },
+  ).lean();
+  for (const asset of registeredAssets) {
+    if (!knownBlobs.has(asset.pathname)) {
+      knownBlobs.set(asset.pathname, asset);
+    }
+  }
+  const replacements = new Map();
+  let uploaded = 0;
+  let reused = 0;
+
+  for (const file of files) {
+    const stat = await fs.stat(file.absolute);
+    let blob = knownBlobs.get(file.pathname);
+    if (!blob && !DRY_RUN) {
+      if (!token) {
+        throw new Error(
+          `BLOB_READ_WRITE_TOKEN is required to upload missing asset: ${file.sourcePath}`,
+        );
+      }
+      blob = await put(file.pathname, await fs.readFile(file.absolute), {
         access: 'public',
         addRandomSuffix: false,
-        allowOverwrite: true,
-        contentType,
+        allowOverwrite: false,
+        contentType: file.mimeType,
         token,
-      },
-    );
-    urls.set(entry.name, blob.url);
-    uploaded += 1;
-    console.log(`Uploaded: ${entry.name}`);
+      });
+      uploaded += 1;
+    } else if (blob) {
+      reused += 1;
+    }
+    const url = blob?.url || `[dry-run] ${file.pathname}`;
+    replacements.set(file.sourcePath, url);
+    if (!DRY_RUN) {
+      await MediaAsset.findOneAndUpdate(
+        { pathname: file.pathname },
+        {
+          $set: {
+            pathname: file.pathname,
+            url,
+            sourcePath: file.sourcePath,
+            mimeType: file.mimeType,
+            size: blob?.size ?? stat.size,
+            dimensions: await imageDimensions(file),
+            category: categoryFor(file),
+          },
+        },
+        { upsert: true, runValidators: true, setDefaultsOnInsert: true },
+      );
+    }
   }
 
-  const current = await SiteContent.findOne({
-    _id: SITE_CONTENT_ID,
-  }).lean();
-  const source = current?.content || (await readSiteContentSeed());
-  const stats = { replaced: 0, unresolved: new Set() };
-  const migrated = replaceUploadReferences(source, urls, stats);
-
-  await SiteContent.findOneAndUpdate(
-    { _id: SITE_CONTENT_ID },
-    { $set: { content: migrated } },
-    { upsert: true, setDefaultsOnInsert: true },
+  const { stats, documents } = await migrateDocuments(replacements);
+  const beforeReferences = collectMediaReferences(documents);
+  const unresolved = [...beforeReferences].filter(
+    (reference) =>
+      /^\/(images|videos|uploads\/cms)\//.test(reference) &&
+      !replacements.has(reference),
   );
+  const rewrittenDocuments = rewriteMediaReferences(documents, replacements);
+  const usedAfter = collectMediaReferences(rewrittenDocuments);
+  const orphaned = [...replacements.entries()]
+    .filter(
+      ([sourcePath, url]) =>
+        !beforeReferences.has(sourcePath) &&
+        !beforeReferences.has(url) &&
+        !usedAfter.has(url),
+    )
+    .map(([sourcePath]) => sourcePath);
 
   console.log(
-    `Migration complete: ${uploaded} file(s) uploaded, ${stats.replaced} reference(s) replaced.`,
+    `${DRY_RUN ? 'Dry run' : 'Migration complete'}: ${files.length} file(s), ` +
+      `${uploaded} uploaded, ${reused} reused, ${stats.replaced} reference(s) rewritten.`,
   );
-  if (stats.unresolved.size) {
-    console.warn(
-      `Unresolved local uploads (${stats.unresolved.size}): ${[
-        ...stats.unresolved,
-      ].join(', ')}`,
-    );
-  }
+  console.log(
+    JSON.stringify({ unresolved, orphaned }, null, 2),
+  );
 } finally {
   await mongoose.disconnect();
 }

@@ -8,6 +8,10 @@ export async function listActiveBanners() {
     .lean();
 }
 
+export async function listAllBanners() {
+  return GlobalBanner.find({}).sort({ order: 1, createdAt: 1 }).lean();
+}
+
 export async function createBanner(payload) {
   try {
     const banner = await GlobalBanner.create(payload);

@@ -6,6 +6,10 @@ export async function listPages(_req, res) {
   return sendSuccess(res, pages);
 }
 
+export async function listAllPages(_req, res) {
+  return sendSuccess(res, await pageService.listAllPages());
+}
+
 export async function getPageBySlug(req, res) {
   const page = await pageService.getPageBySlug(req.params.slug);
   return sendSuccess(res, page);

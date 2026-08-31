@@ -13,6 +13,12 @@ const router = Router();
 
 router.get('/', asyncHandler(bannerController.listBanners));
 
+router.get(
+  '/admin/all',
+  requireApiKey,
+  asyncHandler(bannerController.listAllBanners)
+);
+
 router.post(
   '/',
   requireApiKey,

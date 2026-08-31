@@ -10,6 +10,10 @@ export async function listActivePages() {
     .lean();
 }
 
+export async function listAllPages() {
+  return Page.find({}).sort({ sortOrder: 1, slug: 1 }).lean();
+}
+
 export async function getPageBySlug(slug) {
   const page = await Page.findOne({ slug, isActive: true }).lean();
   if (!page) {

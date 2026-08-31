@@ -7,6 +7,7 @@ import {
   SEEDED_BANNER_TITLES,
   PAGE_SLUG_ALIASES,
 } from './pages.js';
+import { resolveSeedMedia } from '../services/seed-media.js';
 
 /**
  * Migrate non-canonical page slugs to preferred public slugs.
@@ -36,9 +37,10 @@ export async function upsertPages() {
 
   const results = [];
   for (const seed of PAGE_SEEDS) {
+    const resolvedSeed = await resolveSeedMedia(seed);
     const doc = await Page.findOneAndUpdate(
       { slug: seed.slug },
-      { $set: seed },
+      { $set: resolvedSeed },
       {
         upsert: true,
         returnDocument: 'after',
@@ -59,18 +61,19 @@ export async function upsertPages() {
 export async function upsertGlobalBanners() {
   const results = [];
   for (const seed of GLOBAL_BANNER_SEEDS) {
+    const resolvedSeed = await resolveSeedMedia(seed);
     const existing = await GlobalBanner.find({ title: seed.title })
       .sort({ updatedAt: -1 })
       .lean();
 
     let doc;
     if (existing.length === 0) {
-      doc = await GlobalBanner.create(seed);
+      doc = await GlobalBanner.create(resolvedSeed);
     } else {
       const [keep, ...dupes] = existing;
       doc = await GlobalBanner.findByIdAndUpdate(
         keep._id,
-        { $set: seed },
+        { $set: resolvedSeed },
         {
           returnDocument: 'after',
           runValidators: true,
