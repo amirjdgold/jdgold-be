@@ -1,9 +1,13 @@
 import mongoose from 'mongoose';
 
+const connectionCache =
+  globalThis.__jdgMongooseConnection ||
+  (globalThis.__jdgMongooseConnection = { promise: null });
+
 /**
  * Connect to MongoDB using MONGODB_URI from the environment.
  * Never hardcodes credentials or connection strings.
- * On failure, logs and rethrows so the process can exit gracefully.
+ * Cached for Vercel serverless warm starts.
  */
 export async function connectDB() {
   const uri = process.env.MONGODB_URI?.trim();
@@ -18,16 +22,31 @@ export async function connectDB() {
 
   mongoose.set('strictQuery', true);
 
-  try {
-    const conn = await mongoose.connect(uri);
-    console.log(
-      `MongoDB connected: ${conn.connection.host}/${conn.connection.name}`
-    );
-    return conn;
-  } catch (err) {
-    console.error('MongoDB connection failed:', err.message || err);
-    throw err;
+  if (mongoose.connection.readyState === 1) {
+    return mongoose;
   }
+
+  if (mongoose.connection.readyState === 0) {
+    connectionCache.promise = null;
+  }
+
+  if (!connectionCache.promise) {
+    connectionCache.promise = mongoose
+      .connect(uri, { maxPoolSize: 10, serverSelectionTimeoutMS: 10000 })
+      .then((conn) => {
+        console.log(
+          `MongoDB connected: ${conn.connection.host}/${conn.connection.name}`
+        );
+        return conn;
+      })
+      .catch((err) => {
+        connectionCache.promise = null;
+        console.error('MongoDB connection failed:', err.message || err);
+        throw err;
+      });
+  }
+
+  return connectionCache.promise;
 }
 
 export default connectDB;
