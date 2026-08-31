@@ -1,114 +1,91 @@
-import mongoose from 'mongoose';
+import { connectDB } from '../config/db.js';
 import { Page } from '../models/Page.js';
+import { GlobalBanner } from '../models/GlobalBanner.js';
 import { SeedState } from '../models/SeedState.js';
 import { PAGE_SEEDS } from '../seed/pages.js';
+import {
+  migrateLegacyPageSlugs,
+  upsertGlobalBanners,
+} from '../seed/runSeed.js';
 
-const PAGE_SEED_VERSION = 1;
+/** Bump when Phase 4 page / banner seed shape changes. */
+const PAGE_SEED_VERSION = 2;
 
-const connectionCache =
-  globalThis.__jdgMongooseConnection ||
-  (globalThis.__jdgMongooseConnection = {
-    promise: null,
-    seedPromise: null,
-  });
+const seedCache =
+  globalThis.__jdgSeedCache ||
+  (globalThis.__jdgSeedCache = { seedPromise: null });
 
+/**
+ * Connect MongoDB, then ensure Phase 4 page / banner documents exist.
+ * Startup only fills missing / legacy docs; use `npm run seed` to force refresh.
+ * Pass `{ seedPages: false }` for one-off scripts (e.g. migrate:blob).
+ */
 export async function connectDb({ seedPages = true } = {}) {
-  const uri =
-    process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jdg-web';
+  await connectDB();
 
-  mongoose.set('strictQuery', true);
-  if (mongoose.connection.readyState !== 1) {
-    if (mongoose.connection.readyState === 0) {
-      connectionCache.promise = null;
-      connectionCache.seedPromise = null;
-    }
-    if (!connectionCache.promise) {
-      connectionCache.promise = mongoose
-        .connect(uri, { maxPoolSize: 10, serverSelectionTimeoutMS: 10000 })
-        .then((instance) => {
-          console.log('MongoDB connected');
-          return instance;
-        })
-        .catch((err) => {
-          connectionCache.promise = null;
-          console.error(
-            'MongoDB connection failed. Install MongoDB locally or set MONGODB_URI in backend/.env (e.g. MongoDB Atlas).',
-          );
-          throw err;
-        });
-    }
-    await connectionCache.promise;
-  }
-
-  if (seedPages && !connectionCache.seedPromise) {
-    connectionCache.seedPromise = seedPagesIfNeeded().catch((err) => {
-      connectionCache.seedPromise = null;
+  if (seedPages && !seedCache.seedPromise) {
+    seedCache.seedPromise = seedIfNeeded().catch((err) => {
+      seedCache.seedPromise = null;
       throw err;
     });
   }
-  if (seedPages) await connectionCache.seedPromise;
+  if (seedPages) await seedCache.seedPromise;
+}
 
-  return mongoose;
+function needsPageUpgrade(existing, seed) {
+  if (!existing) return true;
+  if (existing.pageType !== seed.pageType) return true;
+  if (!Array.isArray(existing.sections) || existing.sections.length === 0) {
+    if (seed.sections.length > 0) return true;
+  }
+  if (!existing.hero || typeof existing.hero !== 'object') return true;
+  // Legacy Mixed `content` docs from Phase 1
+  if (existing.content != null && existing.pageType == null) return true;
+  return false;
+}
+
+async function seedIfNeeded() {
+  const state = await SeedState.findOne({ key: 'pages' }).lean();
+  if (state?.version !== PAGE_SEED_VERSION) {
+    await seedPagesIfNeeded();
+    await SeedState.findOneAndUpdate(
+      { key: 'pages' },
+      { $set: { version: PAGE_SEED_VERSION } },
+      { upsert: true },
+    );
+  }
+  await seedGlobalBannersIfNeeded();
 }
 
 async function seedPagesIfNeeded() {
-  const state = await SeedState.findOne({ key: 'pages' }).lean();
-  if (state?.version === PAGE_SEED_VERSION) return;
+  await migrateLegacyPageSlugs();
 
-  await seedPagesIfEmpty();
-  await SeedState.findOneAndUpdate(
-    { key: 'pages' },
-    { $set: { version: PAGE_SEED_VERSION } },
-    { upsert: true },
-  );
-}
-
-async function seedPagesIfEmpty() {
   for (const seed of PAGE_SEEDS) {
     const existing = await Page.findOne({ slug: seed.slug }).lean();
-    const licensesNeedFlags =
-      seed.slug === 'license-and-offices' &&
-      (existing?.content?.offices || []).some(
-        (o) =>
-          !o.flagSrc ||
-          !String(o.flagSrc).endsWith('.svg') ||
-          !Array.isArray(o.details) ||
-          o.details.length === 0
-      );
-    const licensesNeedFooterIcons =
-      seed.slug === 'license-and-offices' &&
-      (existing?.content?.footerPoints || []).some((p) => !p.icon);
-    const aboutNeedsRefresh =
-      seed.slug === 'about' &&
-      (!existing?.content?.aboutBodySecondary ||
-        !existing?.content?.jewelleryDeptManagedBy ||
-        !existing?.content?.heroBackgroundImage ||
-        !(existing?.content?.commitments || []).every((c) => c.description));
-    const advantagesNeedHero =
-      seed.slug === 'factories-and-refinery' &&
-      (!existing?.content?.heroImage ||
-        !String(existing.content.heroImage).includes('product-cast-gold-bars'));
-
-    const needsUpgrade =
-      !existing ||
-      !existing.content ||
-      !existing.content.layout ||
-      existing.content.layout !== seed.content.layout ||
-      licensesNeedFlags ||
-      licensesNeedFooterIcons ||
-      aboutNeedsRefresh ||
-      advantagesNeedHero;
-
-    if (needsUpgrade) {
-      await Page.findOneAndReplace(
+    if (needsPageUpgrade(existing, seed)) {
+      await Page.findOneAndUpdate(
         { slug: seed.slug },
-        { slug: seed.slug, title: seed.title, content: seed.content },
-        { upsert: true }
+        { $set: seed },
+        { upsert: true, runValidators: true, setDefaultsOnInsert: true }
       );
       console.log(`Seeded/updated page: ${seed.slug}`);
     }
   }
+
   console.log(
-    `MongoDB pages collection: ${await Page.countDocuments()} document(s)`,
+    `MongoDB pages collection: ${await Page.countDocuments()} document(s)`
+  );
+}
+
+async function seedGlobalBannersIfNeeded() {
+  const count = await GlobalBanner.countDocuments();
+  if (count > 0) {
+    console.log(`MongoDB globalbanners collection: ${count} document(s)`);
+    return;
+  }
+
+  await upsertGlobalBanners();
+  console.log(
+    `MongoDB globalbanners collection: ${await GlobalBanner.countDocuments()} document(s)`
   );
 }

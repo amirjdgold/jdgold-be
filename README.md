@@ -6,9 +6,22 @@ Express API for JD Gold. Deploy the API and frontend as separate **Vercel** proj
 
 ```bash
 cp .env.example .env
+# Edit .env — set MONGODB_URI (and API_KEY for admin writes)
 npm install
-npm run dev
+npm run server:dev
 ```
+
+Useful scripts:
+
+| Script | Purpose |
+|--------|---------|
+| `npm run server` / `npm start` | Production-style start |
+| `npm run server:dev` / `npm run dev` | Nodemon watch mode |
+| `npm run seed` | Upsert initial pages + GlobalBanner (idempotent) |
+| `npm run seed:clear` | Remove seeded pages/banners only |
+| `npm run seed:pages` | Alias of `npm run seed` |
+
+Health check: `GET http://localhost:3001/api/health`
 
 ## Deploy to Vercel (dashboard)
 
@@ -23,10 +36,11 @@ npm run dev
 | `API_KEY` | strong secret (same as admin login) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob store read/write token |
 | `CORS_ORIGINS` | exact frontend origin, e.g. `https://jdgold-fe.vercel.app` |
+| `NODE_ENV` | `production` |
 | `SERVE_STATIC` | `false` |
 
 5. Deploy → note the URL, e.g. `https://jdgold-be.vercel.app`
-6. Smoke test: `https://jdgold-be.vercel.app/api/health` → `{"ok":true}`
+6. Smoke test: `https://jdgold-be.vercel.app/api/health` → `{"success":true,"message":"JD Gold API is running"}`
 
 ## CMS storage
 

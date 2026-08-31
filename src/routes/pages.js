@@ -1,31 +1,44 @@
 import { Router } from 'express';
-import { Page } from '../models/Page.js';
+import * as pagesController from '../controllers/pagesController.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { requireApiKey } from '../middleware/requireApiKey.js';
+import { validate } from '../middleware/validate.js';
+import {
+  createPageSchema,
+  updatePageSchema,
+  pageSlugParamsSchema,
+  mongoIdParamsSchema,
+} from '../validators/pageBanner.js';
 
 const router = Router();
 
-router.get('/', async (_req, res) => {
-  try {
-    const pages = await Page.find({}, 'slug title content.layout').sort({
-      slug: 1,
-    });
-    res.json(pages);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Failed to list pages' });
-  }
-});
+router.get('/', asyncHandler(pagesController.listPages));
 
-router.get('/:slug', async (req, res) => {
-  try {
-    const page = await Page.findOne({ slug: req.params.slug }).lean();
-    if (!page) {
-      return res.status(404).json({ error: 'Page not found' });
-    }
-    res.json(page);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Failed to read page' });
-  }
-});
+router.post(
+  '/',
+  requireApiKey,
+  validate({ body: createPageSchema }),
+  asyncHandler(pagesController.createPage)
+);
+
+router.get(
+  '/:slug',
+  validate({ params: pageSlugParamsSchema }),
+  asyncHandler(pagesController.getPageBySlug)
+);
+
+router.put(
+  '/:id',
+  requireApiKey,
+  validate({ params: mongoIdParamsSchema, body: updatePageSchema }),
+  asyncHandler(pagesController.updatePage)
+);
+
+router.delete(
+  '/:id',
+  requireApiKey,
+  validate({ params: mongoIdParamsSchema }),
+  asyncHandler(pagesController.deletePage)
+);
 
 export default router;

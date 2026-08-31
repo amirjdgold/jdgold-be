@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import fs from 'fs/promises';
 import multer from 'multer';
@@ -6,7 +7,14 @@ import sharp from 'sharp';
 import { fileURLToPath } from 'url';
 import { z } from 'zod';
 import { connectDb } from './db/connect.js';
+import { createCorsMiddleware } from './middleware/cors.js';
+import {
+  errorHandler,
+  notFoundHandler,
+} from './middleware/errorHandler.js';
+import { requireApiKey } from './middleware/requireApiKey.js';
 import pagesRouter from './routes/pages.js';
+import bannerRouter from './routes/banner.js';
 import {
   blobUploadsEnabled,
   handleBlobMediaUpload,
@@ -508,47 +516,7 @@ function mergeSiteContent(existing, incoming) {
   return out;
 }
 
-function loadEnvFile() {
-  const envPath = path.join(__dirname, '..', '.env');
-  return fs.readFile(envPath, 'utf8').catch(() => '');
-}
-
-function applyEnvFromString(text) {
-  for (const line of text.split('\n')) {
-    const t = line.trim();
-    if (!t || t.startsWith('#')) continue;
-    const i = t.indexOf('=');
-    if (i === -1) continue;
-    const key = t.slice(0, i).trim();
-    let val = t.slice(i + 1).trim();
-    if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
-    ) {
-      val = val.slice(1, -1);
-    }
-    if (process.env[key] === undefined) process.env[key] = val;
-  }
-}
-
-function requireApiKey(req, res, next) {
-  const key = process.env.API_KEY;
-  if (!key) {
-    return res.status(503).json({ error: 'API_KEY is not configured' });
-  }
-  const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
-  const headerKey = req.headers['x-api-key'];
-  const provided = bearer || (typeof headerKey === 'string' ? headerKey : '');
-  if (provided !== key) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  next();
-}
-
 async function createApp() {
-  if (!IS_VERCEL) {
-    await applyEnvFromString(await loadEnvFile());
-  }
   if (!IS_VERCEL) {
     await fs.mkdir(CMS_UPLOAD_DIR, { recursive: true });
   }
@@ -556,45 +524,14 @@ async function createApp() {
 
   const app = express();
 
-  const allowedOrigins = (process.env.CORS_ORIGINS || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin) {
-      const allowAll = allowedOrigins.includes('*');
-      const allowOrigin =
-        allowAll ||
-        allowedOrigins.length === 0 ||
-        allowedOrigins.includes(origin);
-      if (allowOrigin) {
-        res.setHeader(
-          'Access-Control-Allow-Origin',
-          allowAll ? '*' : origin,
-        );
-        res.setHeader('Vary', 'Origin');
-        res.setHeader(
-          'Access-Control-Allow-Methods',
-          'GET,POST,PUT,DELETE,OPTIONS',
-        );
-        res.setHeader(
-          'Access-Control-Allow-Headers',
-          'Content-Type, Authorization, x-api-key',
-        );
-      }
-    }
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(204);
-    }
-    next();
-  });
-
+  app.use(createCorsMiddleware());
   app.use(express.json({ limit: '512kb' }));
 
   app.get('/api/health', (_req, res) => {
-    res.json({ ok: true });
+    res.json({
+      success: true,
+      message: 'JD Gold API is running',
+    });
   });
 
   app.get('/api/auth/verify', requireApiKey, (_req, res) => {
@@ -602,6 +539,7 @@ async function createApp() {
   });
 
   app.use('/api/pages', pagesRouter);
+  app.use('/api/banner', bannerRouter);
 
   app.get('/api/content', async (_req, res) => {
     try {
@@ -773,6 +711,9 @@ async function createApp() {
     });
   }
 
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
   return app;
 }
 
@@ -797,11 +738,13 @@ if (!IS_VERCEL) {
     .then((app) => {
       const port = Number(process.env.PORT) || 3001;
       app.listen(port, () => {
-        console.log(`API listening on http://localhost:${port}`);
+        console.log(
+          `JD Gold API listening on http://localhost:${port} (${process.env.NODE_ENV || 'development'})`
+        );
       });
     })
     .catch((err) => {
-      console.error(err);
+      console.error('Failed to start JD Gold API:', err.message || err);
       process.exit(1);
     });
 }
