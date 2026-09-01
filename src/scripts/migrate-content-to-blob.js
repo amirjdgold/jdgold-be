@@ -10,6 +10,7 @@ import { MediaAsset } from '../models/MediaAsset.js';
 import { SiteContent } from '../models/SiteContent.js';
 import { Page } from '../models/Page.js';
 import { GlobalBanner } from '../models/GlobalBanner.js';
+import { getSiteContent } from '../services/site-content.js';
 import {
   collectMediaReferences,
   rewriteMediaReferences,
@@ -201,7 +202,7 @@ await loadEnv();
 const token = process.env.BLOB_READ_WRITE_TOKEN;
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is required');
 
-await connectDb({ seedPages: false });
+await connectDb();
 try {
   const files = await discoverFiles();
   const knownBlobs = token ? await existingBlobs(token) : new Map();
@@ -258,6 +259,8 @@ try {
     }
   }
 
+  // Ensure a fresh database has its singleton before rewriting assignments.
+  await getSiteContent();
   const { stats, documents } = await migrateDocuments(replacements);
   const beforeReferences = collectMediaReferences(documents);
   const unresolved = [...beforeReferences].filter(
