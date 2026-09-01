@@ -38,7 +38,7 @@ export async function upsertMediaAsset(payload) {
       { $set: payload },
       {
         upsert: true,
-        new: true,
+        returnDocument: 'after',
         runValidators: true,
         setDefaultsOnInsert: true,
         lean: true,
@@ -48,7 +48,7 @@ export async function upsertMediaAsset(payload) {
     // The provider callback and authenticated browser verification can race.
     if (error?.code !== 11000) throw error;
     return MediaAsset.findOneAndUpdate(filter, { $set: payload }, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
       lean: true,
     });
@@ -117,7 +117,7 @@ export async function listMedia({
 export async function updateMedia(id, payload) {
   assertValidObjectId(id, 'media asset');
   const asset = await MediaAsset.findByIdAndUpdate(id, payload, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   }).lean();
   if (!asset) throw new AppError('Media asset not found', 404);

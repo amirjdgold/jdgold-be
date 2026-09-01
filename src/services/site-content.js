@@ -42,7 +42,12 @@ export async function getSiteContent() {
   const inserted = await SiteContent.findOneAndUpdate(
     { _id: SITE_CONTENT_ID },
     { $setOnInsert: { _id: SITE_CONTENT_ID, content: seed } },
-    { upsert: true, new: true, setDefaultsOnInsert: true, lean: true },
+    {
+      upsert: true,
+      returnDocument: 'after',
+      setDefaultsOnInsert: true,
+      lean: true,
+    },
   );
   return inserted.content;
 }
@@ -51,7 +56,12 @@ export async function saveSiteContent(content) {
   const saved = await SiteContent.findOneAndUpdate(
     { _id: SITE_CONTENT_ID },
     { $set: { content } },
-    { upsert: true, new: true, setDefaultsOnInsert: true, lean: true },
+    {
+      upsert: true,
+      returnDocument: 'after',
+      setDefaultsOnInsert: true,
+      lean: true,
+    },
   );
   return saved.content;
 }

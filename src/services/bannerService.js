@@ -26,7 +26,7 @@ export async function updateBannerById(id, payload) {
 
   try {
     const banner = await GlobalBanner.findByIdAndUpdate(id, payload, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 

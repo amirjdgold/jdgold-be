@@ -36,7 +36,7 @@ export async function updatePageById(id, payload) {
 
   try {
     const page = await Page.findByIdAndUpdate(id, payload, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 
