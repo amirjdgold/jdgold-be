@@ -169,6 +169,7 @@ export const sectionSchema = new Schema(
     subheading: { type: String, trim: true, default: '' },
     description: { type: String, trim: true, default: '' },
     image: { type: String, trim: true, default: '' },
+    imageAlt: { type: String, trim: true, default: '' },
     images: [imageRefSchema],
     icon: { type: String, trim: true, default: '' },
     sortOrder: { type: Number, default: 0 },
@@ -204,5 +205,6 @@ export const PAGE_TYPES = [
   'about',
   'license-offices',
   'market-advantages',
+  'factory-refinery',
   'custom',
 ];

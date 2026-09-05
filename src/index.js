@@ -288,6 +288,8 @@ const teamMemberSchema = z.object({
 });
 
 const teamManagementSchema = z.object({
+  heading: z.string().optional(),
+  intro: z.string().optional(),
   members: z.array(teamMemberSchema),
 });
 
@@ -740,6 +742,10 @@ async function createApp() {
 
   app.get('/admin-upload.js', (_req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'admin-upload.js'));
+  });
+
+  app.get('/admin-pages.js', (_req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'admin-pages.js'));
   });
 
   if (!IS_VERCEL) {

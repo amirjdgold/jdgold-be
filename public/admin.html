@@ -65,6 +65,21 @@
       border-right: 1px solid var(--border);
       padding: 1rem 0;
     }
+    .page-card {
+      margin: 1rem 0;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      border-radius: 8px;
+    }
+    .page-card h3 { margin: 0 0 0.75rem; font-size: 1rem; color: var(--gold); }
+    .page-item {
+      margin: 0.75rem 0;
+      padding: 0.75rem;
+      border: 1px dashed var(--border);
+      background: var(--panel);
+      border-radius: 8px;
+    }
     .side-nav-title {
       font-size: 0.7rem;
       text-transform: uppercase;
@@ -861,7 +876,12 @@
             <button type="button" class="nav-item" data-view="global-shipping">Global Shipping</button>
             <button type="button" class="nav-item" data-view="get-in-touch">Get in Touch</button>
           </div>
-          <button type="button" class="nav-item" data-view="pages">Pages</button>
+          <p class="side-nav-title">Inner pages</p>
+          <button type="button" class="nav-item" data-view="pages" data-page-slug="about">About Us</button>
+          <button type="button" class="nav-item" data-view="pages" data-page-slug="products">Product &amp; Services</button>
+          <button type="button" class="nav-item" data-view="pages" data-page-slug="factories-and-refinery">Factory &amp; Refinery</button>
+          <button type="button" class="nav-item" data-view="pages" data-page-slug="license-and-offices">License &amp; Offices</button>
+          <button type="button" class="nav-item" data-view="pages">All pages</button>
           <button type="button" class="nav-item" data-view="media">Media library</button>
           <button type="button" class="nav-item" data-view="settings">Settings</button>
         </aside>
@@ -941,6 +961,10 @@
             </p>
             <section>
               <h2>Team management</h2>
+              <label>Management page heading</label>
+              <input type="text" id="teamHeading" placeholder="Shown on /management" />
+              <label>Management page intro</label>
+              <input type="text" id="teamIntro" placeholder="Optional intro under the heading" />
               <div class="row" style="margin-bottom:0.75rem">
                 <button
                   type="button"
@@ -1072,7 +1096,7 @@
           <div id="view-pages" class="view-panel hidden">
             <section>
               <h2>Page editor</h2>
-              <p class="hint">Select any active or inactive page. JSON is validated by the existing page API.</p>
+              <p class="hint">Edit the selected page with the same fields shown on the website. Use the media library to insert image URLs.</p>
               <div class="row">
                 <select id="pageSelect" style="max-width:340px"></select>
                 <button type="button" class="secondary" id="btnReloadPages">Reload</button>
@@ -1081,7 +1105,11 @@
                 <button type="button" id="btnSavePage">Save page</button>
                 <button type="button" class="danger" id="btnDeletePage">Delete page</button>
               </div>
-              <textarea id="pageJson" spellcheck="false"></textarea>
+              <div id="pageForm"></div>
+              <details id="pageJsonWrap">
+                <summary>Advanced JSON</summary>
+                <textarea id="pageJson" spellcheck="false"></textarea>
+              </details>
             </section>
           </div>
 
@@ -1197,6 +1225,7 @@
     referrerpolicy="no-referrer"
   ></script>
   <script src="/admin-upload.js"></script>
+  <script src="/admin-pages.js"></script>
   <script>
     const STORAGE = 'jdg_admin_api_key';
     const MAX_TEAM_MEMBERS = 7;
@@ -3993,13 +4022,21 @@
     function renderSelectedPage() {
       const page = pages.find((item) => String(item._id) === el('pageSelect').value);
       el('pageJson').value = page ? JSON.stringify(page, null, 2) : '';
+      if (typeof renderInnerPageForm === 'function') {
+        renderInnerPageForm(page);
+        bindPageFormEvents();
+      }
       installMediaPickerButtons(el('view-pages'));
     }
 
     async function saveSelectedPage() {
       const current = pages.find((item) => String(item._id) === el('pageSelect').value);
       if (!current) throw new Error('Choose a page first.');
-      const parsed = JSON.parse(el('pageJson').value);
+      let parsed = JSON.parse(el('pageJson').value);
+      if (typeof collectInnerPageForm === 'function' && el('pageForm') && el('pageForm').querySelector('[data-page-field]')) {
+        parsed = collectInnerPageForm(parsed);
+        el('pageJson').value = JSON.stringify(parsed, null, 2);
+      }
       delete parsed._id;
       delete parsed.__v;
       delete parsed.createdAt;
@@ -4100,6 +4137,12 @@
       if (!Array.isArray(site.teamManagement.members)) {
         site.teamManagement.members = [];
       }
+      if (typeof site.teamManagement.heading !== 'string') {
+        site.teamManagement.heading = '';
+      }
+      if (typeof site.teamManagement.intro !== 'string') {
+        site.teamManagement.intro = '';
+      }
       ensureHomeRightGallery();
       ensureWhyChooseSection();
       fillForm();
@@ -4114,6 +4157,8 @@
       el('title').value = b.title || '';
       el('subtitle').value = b.subtitle || '';
       renderSlides();
+      if (el('teamHeading')) el('teamHeading').value = site.teamManagement.heading || '';
+      if (el('teamIntro')) el('teamIntro').value = site.teamManagement.intro || '';
       renderTeamMembers();
       renderHomeRightGallery();
       renderWhyChooseSection();
@@ -4726,7 +4771,9 @@
         }
         if (!m.image) throw new Error('Team member ' + (i + 1) + ' needs a photo URL.');
       }
-      return { members };
+      const heading = el('teamHeading') ? el('teamHeading').value.trim() : (site.teamManagement.heading || '').trim();
+      const intro = el('teamIntro') ? el('teamIntro').value.trim() : (site.teamManagement.intro || '').trim();
+      return { members, heading, intro };
     }
 
     function buildPayload() {
@@ -4969,6 +5016,14 @@
     document.querySelectorAll('#editor .nav-item').forEach((btn) => {
       btn.addEventListener('click', () => {
         setAdminView(btn.getAttribute('data-view'));
+        const slug = btn.getAttribute('data-page-slug');
+        if (slug && el('pageSelect')) {
+          const match = pages.find((page) => page.slug === slug);
+          if (match) {
+            el('pageSelect').value = String(match._id);
+            renderSelectedPage();
+          }
+        }
         closeNavMenu();
       });
     });

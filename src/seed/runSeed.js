@@ -12,7 +12,57 @@ import { resolveSeedMedia } from '../services/seed-media.js';
 /**
  * Migrate non-canonical page slugs to preferred public slugs.
  */
+/** Move advantages off the factory URL so Factory & Refinery can own that slug. */
+export async function migrateAdvantagesSlug() {
+  const occupied = await Page.findOne({ slug: 'factories-and-refinery' }).lean();
+  if (!occupied || occupied.pageType !== 'market-advantages') return;
+
+  const products = await Page.findOne({ slug: 'products' }).lean();
+  if (products) {
+    await Page.deleteOne({ slug: 'factories-and-refinery' });
+    console.log(
+      'Removed advantages page from factories-and-refinery (kept products)'
+    );
+    return;
+  }
+
+  await Page.updateOne(
+    { slug: 'factories-and-refinery' },
+    { $set: { slug: 'products' } }
+  );
+  console.log('Migrated advantages page slug: factories-and-refinery → products');
+}
+
+/** Move hardcoded achievements badge/title into CMS fields on existing products pages. */
+export async function migrateAchievementsDisplayFields() {
+  const page = await Page.findOne({
+    slug: 'products',
+    pageType: 'market-advantages',
+  });
+  if (!page?.sections?.length) return;
+
+  let changed = false;
+  for (const section of page.sections) {
+    if (section.key !== 'achievements' && section.type !== 'achievements') continue;
+    if (!section.icon) {
+      section.icon = '06';
+      changed = true;
+    }
+    if (!section.subheading) {
+      section.subheading = 'Achievements / Projects';
+      changed = true;
+    }
+  }
+
+  if (!changed) return;
+  page.markModified('sections');
+  await page.save();
+  console.log('Filled achievements badge and subheading on products page');
+}
+
 export async function migrateLegacyPageSlugs() {
+  await migrateAdvantagesSlug();
+  await migrateAchievementsDisplayFields();
   for (const [from, to] of Object.entries(PAGE_SLUG_ALIASES)) {
     const legacy = await Page.findOne({ slug: from }).lean();
     if (!legacy) continue;
