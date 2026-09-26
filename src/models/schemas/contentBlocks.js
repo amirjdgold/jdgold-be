@@ -206,5 +206,8 @@ export const PAGE_TYPES = [
   'license-offices',
   'market-advantages',
   'factory-refinery',
+  'management-gallery',
+  'sales-purchase',
+  'contact-us',
   'custom',
 ];

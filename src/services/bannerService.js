@@ -1,6 +1,7 @@
 import { GlobalBanner } from '../models/GlobalBanner.js';
 import { AppError } from '../utils/AppError.js';
 import { assertValidObjectId } from '../utils/mongo.js';
+import { pruneReplacedMedia } from './mediaCleanup.js';
 
 export async function listActiveBanners() {
   return GlobalBanner.find({ active: true })
@@ -25,6 +26,7 @@ export async function updateBannerById(id, payload) {
   assertValidObjectId(id, 'banner');
 
   try {
+    const previous = await GlobalBanner.findById(id).lean();
     const banner = await GlobalBanner.findByIdAndUpdate(id, payload, {
       returnDocument: 'after',
       runValidators: true,
@@ -33,6 +35,7 @@ export async function updateBannerById(id, payload) {
     if (!banner) {
       throw new AppError('Banner not found', 404);
     }
+    await pruneReplacedMedia(previous, banner, `banner ${banner.title}`);
     return banner;
   } catch (err) {
     throw mapBannerWriteError(err);
@@ -46,6 +49,7 @@ export async function deleteBannerById(id) {
   if (!banner) {
     throw new AppError('Banner not found', 404);
   }
+  await pruneReplacedMedia(banner, null, `deleted banner ${banner.title}`);
   return banner;
 }
 

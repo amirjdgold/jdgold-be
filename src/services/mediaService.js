@@ -159,7 +159,7 @@ export async function findMediaUsage(asset) {
   return usage;
 }
 
-async function deleteStoredFile(asset) {
+export async function deleteStoredFile(asset) {
   if (/^https?:\/\//i.test(asset.url)) {
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
       throw new AppError('Blob storage is not configured', 503);

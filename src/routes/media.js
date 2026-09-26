@@ -24,6 +24,7 @@ router.post(
   validate({ body: registerMediaSchema }),
   asyncHandler(mediaController.registerMedia),
 );
+router.post('/cleanup', asyncHandler(mediaController.cleanupMedia));
 router.patch(
   '/:id',
   validate({ params: mediaIdParamsSchema, body: updateMediaSchema }),

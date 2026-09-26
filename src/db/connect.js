@@ -9,7 +9,7 @@ import {
 } from '../seed/runSeed.js';
 
 /** Bump when Phase 4 page / banner seed shape changes. */
-const PAGE_SEED_VERSION = 4;
+const PAGE_SEED_VERSION = 14;
 
 const seedCache =
   globalThis.__jdgSeedCache ||

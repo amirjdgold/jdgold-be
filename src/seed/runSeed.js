@@ -1,5 +1,6 @@
 import { Page } from '../models/Page.js';
 import { GlobalBanner } from '../models/GlobalBanner.js';
+import { SITE_CONTENT_ID, SiteContent } from '../models/SiteContent.js';
 import {
   PAGE_SEEDS,
   GLOBAL_BANNER_SEEDS,
@@ -60,9 +61,93 @@ export async function migrateAchievementsDisplayFields() {
   console.log('Filled achievements badge and subheading on products page');
 }
 
+/** Copy the live Home team roster onto Management Gallery leadership. */
+export async function migrateManagementGalleryLeaders() {
+  const page = await Page.findOne({
+    slug: 'management',
+    pageType: 'management-gallery',
+  });
+  if (!page?.sections?.length) return;
+
+  const site = await SiteContent.findById(SITE_CONTENT_ID).lean();
+  const members = site?.content?.teamManagement?.members || [];
+  const valid = members.filter(
+    (member) => member?.name?.trim() && member?.image?.trim()
+  );
+  if (valid.length < 2) return;
+
+  const section = page.sections.find(
+    (item) => item.key === 'leadership' || item.type === 'leadership'
+  );
+  if (!section) return;
+  if ((section.leadership || []).length >= valid.length) return;
+
+  section.leadership = valid.map((member) => ({
+    title: member.designation || '',
+    name: member.name,
+    experience: '',
+    image: member.image,
+    imageAlt: member.imageAlt || member.name,
+  }));
+  page.markModified('sections');
+  await page.save();
+  console.log(
+    `Updated management gallery leaders from home team (${valid.length})`
+  );
+}
+
+/** Expand Events and Offices into a larger mixed-size collage set. */
+export async function migrateManagementEventsCollage() {
+  const seed = PAGE_SEEDS.find((page) => page.slug === 'management');
+  const seedSection = seed?.sections?.find(
+    (section) => section.key === 'events-and-offices'
+  );
+  if (!seedSection?.gallery?.length) return;
+
+  const page = await Page.findOne({
+    slug: 'management',
+    pageType: 'management-gallery',
+  });
+  if (!page?.sections?.length) return;
+
+  const section = page.sections.find(
+    (item) => item.key === 'events-and-offices'
+  );
+  if (!section) return;
+  if ((section.gallery || []).length >= seedSection.gallery.length) return;
+
+  section.gallery = seedSection.gallery;
+  page.markModified('sections');
+  await page.save();
+  console.log(
+    `Expanded events-and-offices collage (${seedSection.gallery.length} photos)`
+  );
+}
+
+/** Rename the CMS page to Management Galleries. */
+export async function migrateManagementGalleriesName() {
+  const page = await Page.findOne({ slug: 'management' });
+  if (!page) return;
+  let changed = false;
+  if (page.title === 'Management Gallery') {
+    page.title = 'Management Galleries';
+    changed = true;
+  }
+  if (page.metaTitle === 'JD Gold Management Gallery') {
+    page.metaTitle = 'JD Gold Management Galleries';
+    changed = true;
+  }
+  if (!changed) return;
+  await page.save();
+  console.log('Renamed management CMS page to Management Galleries');
+}
+
 export async function migrateLegacyPageSlugs() {
   await migrateAdvantagesSlug();
   await migrateAchievementsDisplayFields();
+  await migrateManagementGalleryLeaders();
+  await migrateManagementEventsCollage();
+  await migrateManagementGalleriesName();
   for (const [from, to] of Object.entries(PAGE_SLUG_ALIASES)) {
     const legacy = await Page.findOne({ slug: from }).lean();
     if (!legacy) continue;

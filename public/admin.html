@@ -634,6 +634,10 @@
       border: 1px solid var(--border);
       object-fit: cover;
       display: block;
+      background: #100b02;
+    }
+    .hrg-thumb-preview[data-placeholder="true"] {
+      object-fit: contain;
     }
     #msg { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.25rem; }
     #msg.ok { color: #15803d; }
@@ -735,13 +739,16 @@
       aspect-ratio: 12 / 5;
       width: 100%;
       max-width: 100%;
-      background: #000;
+      background: #0a0502;
       border-radius: 8px;
-      border: 1px solid rgba(212, 175, 55, 0.45);
+      border: 2px solid #c09038;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    .hero-preview-frame.is-circle {
+      border-radius: 999px;
     }
     .hero-preview-frame img,
     .hero-preview-frame video {
@@ -749,6 +756,13 @@
       height: 100%;
       object-fit: contain;
       vertical-align: middle;
+    }
+    .hero-preview-frame.is-cover img {
+      object-fit: cover;
+    }
+    .media-crop-upload {
+      display: inline-flex;
+      align-items: center;
     }
     .crop-modal-actions {
       display: flex;
@@ -879,6 +893,9 @@
           <p class="side-nav-title">Inner pages</p>
           <button type="button" class="nav-item" data-view="pages" data-page-slug="about">About Us</button>
           <button type="button" class="nav-item" data-view="pages" data-page-slug="products">Product &amp; Services</button>
+          <button type="button" class="nav-item" data-view="pages" data-page-slug="management">Management Galleries</button>
+          <button type="button" class="nav-item" data-view="pages" data-page-slug="sales">Sales &amp; Purchase</button>
+          <button type="button" class="nav-item" data-view="pages" data-page-slug="contact">Contact Us</button>
           <button type="button" class="nav-item" data-view="pages" data-page-slug="factories-and-refinery">Factory &amp; Refinery</button>
           <button type="button" class="nav-item" data-view="pages" data-page-slug="license-and-offices">License &amp; Offices</button>
           <button type="button" class="nav-item" data-view="pages">All pages</button>
@@ -956,13 +973,13 @@
           <div id="view-team" class="view-panel hidden">
             <p class="hint">
               <strong>Portrait photos</strong> for the management column on the home page. Uploads are
-              optimized to <strong>640×800</strong> WebP (cover crop). You can also paste a path under
+              optimized to <strong>3∶4 / 640×854</strong> after the crop preview. You can also paste a path under
               <code>/images/</code> or <code>/uploads/cms/</code>.
             </p>
             <section>
               <h2>Team management</h2>
               <label>Management page heading</label>
-              <input type="text" id="teamHeading" placeholder="Shown on /management" />
+              <input type="text" id="teamHeading" placeholder="Optional heading for Home team column" />
               <label>Management page intro</label>
               <input type="text" id="teamIntro" placeholder="Optional intro under the heading" />
               <div class="row" style="margin-bottom:0.75rem">
@@ -984,7 +1001,7 @@
               <strong>Right column on the home page:</strong> five blocks (Staff, Refinery, License &amp; Office,
               Jewelry factory, Products). License &amp; Office uses <strong>three</strong> images; Staff, Refinery,
               Jewelry factory, and Products use <strong>six</strong> (two rows of three on the site).
-              Uploads are saved as <strong>720×360</strong> WebP (cover crop). You can also paste a path under
+              Uploads open a <strong>1∶1 crop preview</strong> (800×800) matching the three-across tiles. You can also paste a path under
               <code>/images/</code> or <code>/uploads/cms/</code>.
             </p>
             <section>
@@ -996,7 +1013,7 @@
           <div id="view-why-choose" class="view-panel hidden">
             <p class="hint">
               <strong>“Why Choose JD Gold?”</strong> block: heading, five feature cards, five stat cards,
-              mission and vision copy, center mission photo, and vision card icon (upload or URL).
+              mission and vision copy, center mission photo (2∶1 crop), and vision card icon (1∶1 crop).
             </p>
             <section>
               <h2>Why Choose JD Gold</h2>
@@ -1007,7 +1024,7 @@
           <div id="view-building-trust" class="view-panel hidden">
             <p class="hint">
               <strong>“Building Trust in Gold”</strong> row on the home page: section heading and five
-              image tiles. Uploads use the gallery optimizer (<strong>720×360</strong> WebP cover crop).
+              image tiles. Uploads open a <strong>1∶1 crop preview</strong> matching the five home tiles.
             </p>
             <section>
               <h2>Building Trust in Gold</h2>
@@ -1018,7 +1035,7 @@
           <div id="view-gold-products" class="view-panel hidden">
             <p class="hint">
               <strong>“Our Gold Products”</strong> row: section heading and six product cards (label,
-              image, optional alt). Uploads use the gallery optimizer (<strong>720×360</strong> WebP).
+              image, optional alt). Uploads open a <strong>1∶1 crop preview</strong> matching the product cards.
             </p>
             <section>
               <h2>Our Gold Products</h2>
@@ -1029,7 +1046,7 @@
           <div id="view-gold-refining" class="view-panel hidden">
             <p class="hint">
               <strong>“Our Gold Refining Process”</strong>: heading and six step cards (step number,
-              title, background image). Uploads use the gallery optimizer (<strong>720×360</strong> WebP).
+              title, background image). Uploads open a <strong>1∶1 crop preview</strong> matching the step cards.
             </p>
             <section>
               <h2>Gold Refining Process</h2>
@@ -1039,8 +1056,8 @@
 
           <div id="view-refining-gallery" class="view-panel hidden">
             <p class="hint">
-              Three-image row below the refining process (no heading). Uploads use
-              <strong>720×360</strong> WebP cover crop.
+              Three-image row below the refining process (no heading). Uploads open a
+              <strong>2∶1 crop preview</strong> matching the wide tiles.
             </p>
             <section>
               <h2>Refining gallery</h2>
@@ -1051,7 +1068,7 @@
           <div id="view-industries-serve" class="view-panel hidden">
             <p class="hint">
               <strong>“Industries We Serve”</strong>: section heading, left and right side photos, and six
-              industry labels in the center grid. Uploads use the gallery optimizer (<strong>720×360</strong> WebP).
+              industry labels in the center grid. Side photos open a <strong>3∶4 crop preview</strong>.
             </p>
             <section>
               <h2>Industries We Serve</h2>
@@ -1062,7 +1079,7 @@
           <div id="view-mining-extraction" class="view-panel hidden">
             <p class="hint">
               <strong>“Mining &amp; Extraction”</strong>: section heading and five image tiles in a row.
-              Uploads use the gallery optimizer (<strong>720×360</strong> WebP cover crop).
+              Uploads open a <strong>1∶1 crop preview</strong> matching the five home tiles.
             </p>
             <section>
               <h2>Mining &amp; Extraction</h2>
@@ -1084,8 +1101,8 @@
           <div id="view-get-in-touch" class="view-panel hidden">
             <p class="hint">
               <strong>“Get in Touch”</strong>: top gallery (3 images), contact card (heading, phone,
-              WhatsApp, email, address), and side license photos. Uploads use
-              <strong>720×360</strong> WebP cover crop.
+              WhatsApp, email, address), and side license photos. Top images use a
+              <strong>2∶1 crop</strong>; side photos use a <strong>4∶3 crop</strong>.
             </p>
             <section>
               <h2>Get in Touch</h2>
@@ -1096,7 +1113,7 @@
           <div id="view-pages" class="view-panel hidden">
             <section>
               <h2>Page editor</h2>
-              <p class="hint">Edit the selected page with the same fields shown on the website. Use the media library to insert image URLs.</p>
+              <p class="hint" id="pageEditorHint">Edit the selected page with the same fields shown on the website. Use the media library to insert image URLs.</p>
               <div class="row">
                 <select id="pageSelect" style="max-width:340px"></select>
                 <button type="button" class="secondary" id="btnReloadPages">Reload</button>
@@ -1120,6 +1137,21 @@
                 <label class="pick-label">Upload media…
                   <input type="file" id="mediaUpload" accept="image/*,video/*" multiple />
                 </label>
+                <select id="mediaCropPreset" style="max-width:220px;margin:0" title="Crop frame used when uploading images">
+                  <option value="gallery">Crop: wide gallery 2∶1</option>
+                  <option value="hero">Crop: homepage slider 12∶5</option>
+                  <option value="portrait">Crop: portrait 3∶4</option>
+                  <option value="square">Crop: square 1∶1</option>
+                  <option value="process">Crop: process card 4∶3</option>
+                  <option value="banner">Crop: wide banner 16∶7</option>
+                  <option value="collage">Crop: collage 8∶3</option>
+                  <option value="wideBand">Crop: full-width band 4∶1</option>
+                  <option value="logo">Crop: logo 3∶1</option>
+                  <option value="icon">Crop: icon 1∶1</option>
+                  <option value="certificate">Crop: certificate 3∶4</option>
+                  <option value="flag">Crop: flag 1∶1</option>
+                  <option value="general">Crop: free</option>
+                </select>
                 <input id="mediaSearch" type="text" placeholder="Search filename, alt or caption" style="max-width:300px;margin:0" />
                 <select id="mediaCategory" style="max-width:150px;margin:0">
                   <option value="">All categories</option>
@@ -1132,7 +1164,13 @@
                   <option value="video">Videos</option>
                 </select>
                 <button type="button" class="secondary" id="btnMediaSearch">Search</button>
+                <button type="button" class="secondary" id="btnMediaCleanup" title="Delete uploads older than a day that no page, section or banner uses">Clean unused files</button>
               </div>
+              <p class="hint">
+                Replaced images are deleted automatically when you save a page, so the
+                database stays small. Use <strong>Clean unused files</strong> to also drop
+                uploads that were never placed in a layout.
+              </p>
               <div id="mediaGrid" class="media-grid"></div>
               <div class="row" style="margin-top:0.8rem">
                 <button type="button" class="secondary" id="btnMediaPrev">Previous</button>
@@ -1157,7 +1195,7 @@
                 </label>
               </div>
               <label for="logoSrc">Path / URL (filled after upload; optional)</label>
-              <input id="logoSrc" type="text" placeholder="/uploads/cms/… or https://…" />
+              <input id="logoSrc" type="text" data-crop-preset="logo" placeholder="/uploads/cms/… or https://…" />
               <label for="logoAlt">Logo alt text</label>
               <input id="logoAlt" type="text" />
               <label for="title">Title (e.g. JD GOLD)</label>
@@ -1176,7 +1214,7 @@
   <div id="slideCropModal" class="crop-modal hidden" aria-hidden="true">
     <div class="crop-modal-backdrop" id="slideCropBackdrop" tabindex="-1"></div>
     <div class="crop-modal-panel" role="dialog" aria-modal="true" aria-labelledby="slideCropTitle">
-      <h2 id="slideCropTitle">Crop for hero strip</h2>
+      <h2 id="slideCropTitle">Crop and preview</h2>
       <p id="slideCropSubtitle" class="crop-modal-hint"></p>
       <div id="cropBodyImage" class="crop-modal-body--image">
         <div>
@@ -1229,6 +1267,7 @@
   <script>
     const STORAGE = 'jdg_admin_api_key';
     const MAX_TEAM_MEMBERS = 7;
+    const MEDIA_FALLBACK = '/images/media-fallback.svg';
 
     const el = (id) => document.getElementById(id);
     const loginPanel = el('loginPanel');
@@ -1394,13 +1433,7 @@
           imgInput.value = (slot && slot.image) || '';
           wrap.appendChild(imgLabel);
           wrap.appendChild(imgInput);
-          if (slot && slot.image) {
-            const prev = document.createElement('img');
-            prev.className = 'hrg-thumb-preview';
-            prev.alt = '';
-            prev.src = slot.image;
-            wrap.appendChild(prev);
-          }
+          appendThumbPreview(wrap, (slot && slot.image) || '');
           const altLabel = document.createElement('label');
           altLabel.textContent = 'Alt text (optional)';
           const altInput = document.createElement('input');
@@ -1491,7 +1524,11 @@
       if (!key || slotI == null) return;
       const f = t.files && t.files[0];
       t.value = '';
-      if (f) uploadHrgSlot(key, +slotI, f);
+      if (f) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadHrgSlot(key, +slotI, cropped);
+        });
+      }
     }
 
     function buildHomeRightGalleryPayload() {
@@ -1709,13 +1746,7 @@
       imgIn.value = w.missionImage;
       mvSec.appendChild(imgLab);
       mvSec.appendChild(imgIn);
-      if (w.missionImage) {
-        const prev = document.createElement('img');
-        prev.className = 'hrg-thumb-preview';
-        prev.alt = '';
-        prev.src = w.missionImage;
-        mvSec.appendChild(prev);
-      }
+      appendThumbPreview(mvSec, w.missionImage || '');
       const altLab = document.createElement('label');
       altLab.textContent = 'Mission photo alt';
       const altIn = document.createElement('input');
@@ -1744,13 +1775,7 @@
       visIconIn.value = w.visionIcon || '';
       mvSec.appendChild(visIconLab);
       mvSec.appendChild(visIconIn);
-      if (w.visionIcon) {
-        const visPrev = document.createElement('img');
-        visPrev.className = 'hrg-thumb-preview';
-        visPrev.alt = '';
-        visPrev.src = w.visionIcon;
-        mvSec.appendChild(visPrev);
-      }
+      appendThumbPreview(mvSec, w.visionIcon || '');
       const visAltLab = document.createElement('label');
       visAltLab.textContent = 'Vision icon alt';
       const visAltIn = document.createElement('input');
@@ -1901,11 +1926,15 @@
       t.value = '';
       if (!f) return;
       if (t.dataset.wcMissionUpload != null) {
-        uploadWhyChooseMissionImage(f);
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadWhyChooseMissionImage(cropped);
+        });
         return;
       }
       if (t.dataset.wcVisionUpload != null) {
-        uploadWhyChooseVisionIcon(f);
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadWhyChooseVisionIcon(cropped);
+        });
       }
     }
 
@@ -2023,13 +2052,7 @@
         imgIn.value = (slot && slot.image) || '';
         wrap.appendChild(imgLab);
         wrap.appendChild(imgIn);
-        if (slot && slot.image) {
-          const prev = document.createElement('img');
-          prev.className = 'hrg-thumb-preview';
-          prev.alt = '';
-          prev.src = slot.image;
-          wrap.appendChild(prev);
-        }
+        appendThumbPreview(wrap, (slot && slot.image) || '');
         const altLab = document.createElement('label');
         altLab.textContent = 'Alt text (optional)';
         const altIn = document.createElement('input');
@@ -2111,7 +2134,11 @@
       if (t.dataset.btUpload == null) return;
       const f = t.files && t.files[0];
       t.value = '';
-      if (f) uploadBuildingTrustImage(f, +t.dataset.btUpload);
+      if (f) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadBuildingTrustImage(cropped, +t.dataset.btUpload);
+        });
+      }
     }
 
     function buildBuildingTrustPayload() {
@@ -2230,13 +2257,7 @@
         imgIn.value = (p && p.image) || '';
         wrap.appendChild(imgLab);
         wrap.appendChild(imgIn);
-        if (p && p.image) {
-          const prev = document.createElement('img');
-          prev.className = 'hrg-thumb-preview';
-          prev.alt = '';
-          prev.src = p.image;
-          wrap.appendChild(prev);
-        }
+        appendThumbPreview(wrap, (p && p.image) || '');
         const altLab = document.createElement('label');
         altLab.textContent = 'Image alt (optional)';
         const altIn = document.createElement('input');
@@ -2323,7 +2344,11 @@
       if (t.dataset.gpUpload == null) return;
       const f = t.files && t.files[0];
       t.value = '';
-      if (f) uploadGoldProductImage(f, +t.dataset.gpUpload);
+      if (f) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadGoldProductImage(cropped, +t.dataset.gpUpload);
+        });
+      }
     }
 
     function buildGoldProductsPayload() {
@@ -2430,13 +2455,7 @@
         imgIn.value = (s && s.image) || '';
         wrap.appendChild(imgLab);
         wrap.appendChild(imgIn);
-        if (s && s.image) {
-          const prev = document.createElement('img');
-          prev.className = 'hrg-thumb-preview';
-          prev.alt = '';
-          prev.src = s.image;
-          wrap.appendChild(prev);
-        }
+        appendThumbPreview(wrap, (s && s.image) || '');
         const altLab = document.createElement('label');
         altLab.textContent = 'Image alt (optional)';
         const altIn = document.createElement('input');
@@ -2528,7 +2547,11 @@
       if (t.dataset.grpUpload == null) return;
       const f = t.files && t.files[0];
       t.value = '';
-      if (f) uploadGoldRefiningStepImage(f, +t.dataset.grpUpload);
+      if (f) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadGoldRefiningStepImage(cropped, +t.dataset.grpUpload);
+        });
+      }
     }
 
     function buildGoldRefiningProcessPayload() {
@@ -2602,13 +2625,7 @@
         imgIn.value = (slot && slot.image) || '';
         wrap.appendChild(imgLab);
         wrap.appendChild(imgIn);
-        if (slot && slot.image) {
-          const prev = document.createElement('img');
-          prev.className = 'hrg-thumb-preview';
-          prev.alt = '';
-          prev.src = slot.image;
-          wrap.appendChild(prev);
-        }
+        appendThumbPreview(wrap, (slot && slot.image) || '');
         const altLab = document.createElement('label');
         altLab.textContent = 'Alt text (optional)';
         const altIn = document.createElement('input');
@@ -2686,7 +2703,11 @@
       if (t.dataset.rgUpload == null) return;
       const f = t.files && t.files[0];
       t.value = '';
-      if (f) uploadRefiningGalleryImage(f, +t.dataset.rgUpload);
+      if (f) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadRefiningGalleryImage(cropped, +t.dataset.rgUpload);
+        });
+      }
     }
 
     function buildRefiningGalleryPayload() {
@@ -2761,13 +2782,7 @@
       imgIn.value = imageVal || '';
       wrap.appendChild(imgLab);
       wrap.appendChild(imgIn);
-      if (imageVal) {
-        const prev = document.createElement('img');
-        prev.className = 'hrg-thumb-preview';
-        prev.alt = '';
-        prev.src = imageVal;
-        wrap.appendChild(prev);
-      }
+      appendThumbPreview(wrap, imageVal || '');
       const altLab = document.createElement('label');
       altLab.textContent = 'Alt text (optional)';
       const altIn = document.createElement('input');
@@ -2925,8 +2940,16 @@
       const f = t.files && t.files[0];
       t.value = '';
       if (!f) return;
-      if (t.dataset.iwsLeftUpload != null) uploadIndustriesWeServeSideImage(f, 'left');
-      if (t.dataset.iwsRightUpload != null) uploadIndustriesWeServeSideImage(f, 'right');
+      if (t.dataset.iwsLeftUpload != null) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadIndustriesWeServeSideImage(cropped, 'left');
+        });
+      }
+      if (t.dataset.iwsRightUpload != null) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadIndustriesWeServeSideImage(cropped, 'right');
+        });
+      }
     }
 
     function buildIndustriesWeServePayload() {
@@ -3015,13 +3038,7 @@
         imgIn.value = (slot && slot.image) || '';
         wrap.appendChild(imgLab);
         wrap.appendChild(imgIn);
-        if (slot && slot.image) {
-          const prev = document.createElement('img');
-          prev.className = 'hrg-thumb-preview';
-          prev.alt = '';
-          prev.src = slot.image;
-          wrap.appendChild(prev);
-        }
+        appendThumbPreview(wrap, (slot && slot.image) || '');
         const altLab = document.createElement('label');
         altLab.textContent = 'Alt text (optional)';
         const altIn = document.createElement('input');
@@ -3103,7 +3120,11 @@
       if (t.dataset.meUpload == null) return;
       const f = t.files && t.files[0];
       t.value = '';
-      if (f) uploadMiningExtractionImage(f, +t.dataset.meUpload);
+      if (f) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadMiningExtractionImage(cropped, +t.dataset.meUpload);
+        });
+      }
     }
 
     function buildMiningExtractionPayload() {
@@ -3312,13 +3333,7 @@
       imgIn.value = imageVal || '';
       wrap.appendChild(imgLab);
       wrap.appendChild(imgIn);
-      if (imageVal) {
-        const prev = document.createElement('img');
-        prev.className = 'hrg-thumb-preview';
-        prev.alt = '';
-        prev.src = imageVal;
-        wrap.appendChild(prev);
-      }
+      appendThumbPreview(wrap, imageVal || '');
       const altLab = document.createElement('label');
       altLab.textContent = 'Alt text (optional)';
       const altIn = document.createElement('input');
@@ -3381,13 +3396,7 @@
         imgIn.value = (slot && slot.image) || '';
         wrap.appendChild(imgLab);
         wrap.appendChild(imgIn);
-        if (slot && slot.image) {
-          const prev = document.createElement('img');
-          prev.className = 'hrg-thumb-preview';
-          prev.alt = '';
-          prev.src = slot.image;
-          wrap.appendChild(prev);
-        }
+        appendThumbPreview(wrap, (slot && slot.image) || '');
         const altLab = document.createElement('label');
         altLab.textContent = 'Alt text (optional)';
         const altIn = document.createElement('input');
@@ -3556,11 +3565,21 @@
       t.value = '';
       if (!f) return;
       if (t.dataset.gitTopUpload != null) {
-        uploadGetInTouchGallery(f, 'top', +t.dataset.gitTopUpload);
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadGetInTouchGallery(cropped, 'top', +t.dataset.gitTopUpload);
+        });
         return;
       }
-      if (t.dataset.gitLeftUpload != null) uploadGetInTouchGallery(f, 'left', 0);
-      if (t.dataset.gitRightUpload != null) uploadGetInTouchGallery(f, 'right', 0);
+      if (t.dataset.gitLeftUpload != null) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadGetInTouchGallery(cropped, 'left', 0);
+        });
+      }
+      if (t.dataset.gitRightUpload != null) {
+        pickCroppedImage(f, inferCropPreset(t)).then((cropped) => {
+          if (cropped) uploadGetInTouchGallery(cropped, 'right', 0);
+        });
+      }
     }
 
     function buildGetInTouchPayload() {
@@ -3686,14 +3705,212 @@
       }
     }
 
-    /** 12∶5 — matches backend slide Sharp target (1200×500 fit-inside) */
-    const HERO_CROP_ASPECT = 12 / 5;
-    const CROP_EXPORT_W = 1200;
-    const CROP_EXPORT_H = 500;
+    /** Frontend display frames used while cropping Admin uploads. */
+    const IMAGE_PRESETS = {
+      hero: {
+        id: 'hero',
+        title: 'Crop for homepage slider',
+        hint: 'Locked to 12∶5 (1200×500). Matches the homepage center tile on desktop and the scaled phone layout.',
+        aspect: 12 / 5,
+        exportW: 1200,
+        exportH: 500,
+        previewW: 360,
+        previewH: 150,
+        previewLabel: 'Homepage slider — center tile',
+        previewContain: true,
+        query: '',
+      },
+      portrait: {
+        id: 'portrait',
+        title: 'Crop for portrait card',
+        hint: 'Locked to 3∶4 (640×854). Used for Home team, Management leaders, Sales/Contact cards, and About portraits.',
+        aspect: 3 / 4,
+        exportW: 640,
+        exportH: 854,
+        previewW: 168,
+        previewH: 224,
+        previewLabel: 'Portrait card on the website',
+        previewRadius: '16px',
+        query: 'portrait=1',
+      },
+      gallery: {
+        id: 'gallery',
+        title: 'Crop for wide gallery tile',
+        hint: 'Locked to 2∶1 (720×360). Used for Home galleries, Building Trust, Get in Touch, Mining, and wide tiles.',
+        aspect: 2,
+        exportW: 720,
+        exportH: 360,
+        previewW: 280,
+        previewH: 140,
+        previewLabel: 'Gallery tile on the website',
+        previewRadius: '16px',
+        query: 'gallery=1',
+      },
+      square: {
+        id: 'square',
+        title: 'Crop for square tile',
+        hint: 'Locked to 1∶1 (800×800). Used for jewellery collection tiles.',
+        aspect: 1,
+        exportW: 800,
+        exportH: 800,
+        previewW: 180,
+        previewH: 180,
+        previewLabel: 'Square tile on the website',
+        query: 'gallery=1',
+      },
+      process: {
+        id: 'process',
+        title: 'Crop for process / product card',
+        hint: 'Locked to 4∶3 (800×600). Used for Factory process cards and achievement photos.',
+        aspect: 4 / 3,
+        exportW: 800,
+        exportH: 600,
+        previewW: 240,
+        previewH: 180,
+        previewLabel: 'Process card on the website',
+        query: 'gallery=1',
+      },
+      banner: {
+        id: 'banner',
+        title: 'Crop for wide page banner',
+        hint: 'Locked to 16∶7 (1280×560). Used for inner-page heroes (About/Sales/Contact/Licenses/Factory bands).',
+        aspect: 16 / 7,
+        exportW: 1280,
+        exportH: 560,
+        previewW: 320,
+        previewH: 140,
+        previewLabel: 'Inner-page hero on the website',
+        previewRadius: '16px',
+        query: 'gallery=1',
+      },
+      collage: {
+        id: 'collage',
+        title: 'Crop for collage photo',
+        hint: 'Locked to 8∶3 (960×360). Events/Offices collage tiles are wide; object-cover fills mixed spans.',
+        aspect: 8 / 3,
+        exportW: 960,
+        exportH: 360,
+        previewW: 240,
+        previewH: 90,
+        previewLabel: 'Collage tile on the website',
+        query: 'gallery=1',
+      },
+      wideBand: {
+        id: 'wideBand',
+        title: 'Crop for full-width band',
+        hint: 'Locked to 4∶1 (1280×320). Factory/refinery hero bands span the page width.',
+        aspect: 4,
+        exportW: 1280,
+        exportH: 320,
+        previewW: 320,
+        previewH: 80,
+        previewLabel: 'Full-width band on the website',
+        query: 'gallery=1',
+      },
+      logo: {
+        id: 'logo',
+        title: 'Crop for logo',
+        hint: 'Locked to 3∶1 (600×200). Matches the header/logo band. Keep the mark centered.',
+        aspect: 3,
+        exportW: 600,
+        exportH: 200,
+        previewW: 240,
+        previewH: 80,
+        previewLabel: 'Header logo on the website',
+        previewContain: true,
+        query: 'logo=1',
+      },
+      icon: {
+        id: 'icon',
+        title: 'Crop for icon',
+        hint: 'Locked to 1∶1 (256×256). Used for Why Choose icons and small badges.',
+        aspect: 1,
+        exportW: 256,
+        exportH: 256,
+        previewW: 56,
+        previewH: 56,
+        previewLabel: 'Icon badge on the website',
+        previewContain: true,
+        query: 'logo=1',
+      },
+      certificate: {
+        id: 'certificate',
+        title: 'Crop for certificate',
+        hint: 'Locked to 3∶4 (900×1200). License certificates are shown with the full document visible.',
+        aspect: 3 / 4,
+        exportW: 900,
+        exportH: 1200,
+        previewW: 150,
+        previewH: 200,
+        previewLabel: 'Certificate on License & Offices',
+        previewContain: true,
+        query: 'gallery=1',
+      },
+      flag: {
+        id: 'flag',
+        title: 'Crop for flag',
+        hint: 'Locked to 1∶1 (256×256). Circular flag badge on License & Offices.',
+        aspect: 1,
+        exportW: 256,
+        exportH: 256,
+        previewW: 48,
+        previewH: 48,
+        previewLabel: 'Flag badge on the website',
+        previewCircle: true,
+        query: 'logo=1',
+      },
+      general: {
+        id: 'general',
+        title: 'Crop image',
+        hint: 'Free crop. Choose a frame that matches where you will place this file.',
+        aspect: 0,
+        exportW: 1600,
+        exportH: 1600,
+        previewW: 240,
+        previewH: 160,
+        previewLabel: 'Cropped result',
+        previewContain: true,
+        query: 'category=general',
+      },
+    };
 
     let slideCropperInstance = null;
     let slideCropBlobUrl = null;
     let heroPreviewDebounce = null;
+    let currentCropPreset = IMAGE_PRESETS.hero;
+
+    /** WebP encoding is unavailable on Safari below 16.4; JPEG stays the fallback. */
+    let webpEncodeSupport;
+    function canEncodeWebp() {
+      if (webpEncodeSupport === undefined) {
+        const probe = document.createElement('canvas');
+        probe.width = 1;
+        probe.height = 1;
+        webpEncodeSupport = probe.toDataURL('image/webp').startsWith('data:image/webp');
+      }
+      return webpEncodeSupport;
+    }
+
+    /** Cropped output leaves the browser as WebP so Blob storage never holds a JPEG. */
+    function canvasToUploadFile(canvas, baseName) {
+      const webp = canEncodeWebp();
+      const type = webp ? 'image/webp' : 'image/jpeg';
+      return new Promise((resolve) => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(null);
+              return;
+            }
+            resolve(
+              new File([blob], baseName + (webp ? '.webp' : '.jpg'), { type })
+            );
+          },
+          type,
+          webp ? 0.9 : 0.92
+        );
+      });
+    }
 
     function isRasterImageForCrop(file) {
       const t = (file.type || '').toLowerCase();
@@ -3745,12 +3962,26 @@
       if (vu) vu.onclick = null;
     }
 
+    function applyPreviewFrame(preset) {
+      const frame = document.querySelector('#cropBodyImage .hero-preview-frame');
+      if (!frame) return;
+      const ratio = preset.aspect > 0 ? preset.aspect : 16 / 10;
+      frame.style.aspectRatio = String(ratio);
+      frame.style.maxWidth = (preset.previewW || 360) + 'px';
+      frame.style.borderRadius = preset.previewCircle ? '999px' : (preset.previewRadius || '12px');
+      frame.classList.toggle('is-cover', !preset.previewContain && !preset.previewCircle);
+      frame.classList.toggle('is-circle', Boolean(preset.previewCircle));
+      const label = el('sitePreviewLabel');
+      if (label) label.textContent = preset.previewLabel || 'How it looks on the website';
+    }
+
     function updateHeroPreviewFromCropper() {
       if (!slideCropperInstance || typeof slideCropperInstance.getCroppedCanvas !== 'function')
         return;
+      const preset = currentCropPreset || IMAGE_PRESETS.hero;
       const canvas = slideCropperInstance.getCroppedCanvas({
-        width: 360,
-        height: 150,
+        width: preset.previewW || 360,
+        height: preset.previewH || Math.round((preset.previewW || 360) / (preset.aspect || 1.6)),
         imageSmoothingQuality: 'high',
       });
       if (!canvas) return;
@@ -3762,9 +3993,12 @@
       heroPreviewDebounce = setTimeout(updateHeroPreviewFromCropper, 80);
     }
 
-    function openImageCropModal(file) {
+    function openImageCropModal(file, presetId) {
+      const preset = IMAGE_PRESETS[presetId] || IMAGE_PRESETS.gallery;
+      currentCropPreset = preset;
       return new Promise((resolve) => {
         hideSlideCropModal();
+        currentCropPreset = preset;
         if (typeof Cropper === 'undefined') {
           resolve(null);
           return;
@@ -3772,9 +4006,10 @@
         const modal = el('slideCropModal');
         el('cropBodyImage').classList.remove('hidden');
         el('cropBodyVideo').classList.add('hidden');
-        el('slideCropTitle').textContent = 'Crop for hero strip';
+        el('slideCropTitle').textContent = preset.title;
         el('slideCropSubtitle').textContent =
-          'Frame is locked to 12∶5 (same proportions as the homepage center tile). Drag to position the image; use the cropper handles or wheel to zoom.';
+          preset.hint + ' Drag to position; use the handles or wheel to zoom. The right preview is the website frame.';
+        applyPreviewFrame(preset);
         el('slideCropConfirm').classList.remove('hidden');
         el('slideCropVideoUpload').classList.add('hidden');
 
@@ -3797,7 +4032,7 @@
             slideCropperInstance = null;
           }
           slideCropperInstance = new Cropper(simg, {
-            aspectRatio: HERO_CROP_ASPECT,
+            aspectRatio: preset.aspect > 0 ? preset.aspect : NaN,
             viewMode: 1,
             dragMode: 'move',
             autoCropArea: 1,
@@ -3817,32 +4052,128 @@
             settle(null);
             return;
           }
-          const canvas = slideCropperInstance.getCroppedCanvas({
-            width: CROP_EXPORT_W,
-            height: CROP_EXPORT_H,
+          const canvasOpts = {
             imageSmoothingQuality: 'high',
-          });
+            maxWidth: preset.exportW,
+            maxHeight: preset.exportH,
+          };
+          if (preset.aspect > 0) {
+            canvasOpts.width = preset.exportW;
+            canvasOpts.height = preset.exportH;
+          }
+          const canvas = slideCropperInstance.getCroppedCanvas(canvasOpts);
           if (!canvas) {
             settle(null);
             return;
           }
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                settle(null);
-                return;
-              }
-              const base = (file.name || 'slide').replace(/\.[^.]+$/, '');
-              settle(new File([blob], base + '-hero.jpg', { type: 'image/jpeg' }));
-            },
-            'image/jpeg',
-            0.92
-          );
+          const base = (file.name || 'image').replace(/\.[^.]+$/, '');
+          canvasToUploadFile(canvas, base + '-' + preset.id).then(settle);
         };
 
         modal.classList.remove('hidden');
         modal.setAttribute('aria-hidden', 'false');
       });
+    }
+
+    async function pickCroppedImage(file, presetId) {
+      if (!file) return null;
+      if (!isRasterImageForCrop(file)) return file;
+      if (typeof Cropper === 'undefined') {
+        showMsg('Crop editor did not load — refresh the page or check your network.', 'bad');
+        return null;
+      }
+      const cropped = await openImageCropModal(file, presetId);
+      if (!cropped) {
+        showMsg('Upload cancelled — image unchanged.', '');
+        return null;
+      }
+      return cropped;
+    }
+
+    function inferCropPreset(input) {
+      const explicit = input.dataset.cropPreset;
+      if (explicit && IMAGE_PRESETS[explicit]) return explicit;
+      const ds = input.dataset;
+      if (ds.hrgImage != null || ds.hrgUpload != null) return 'square';
+      if (ds.gpImage != null || ds.gpUpload != null) return 'square';
+      if (ds.btImage != null || ds.btUpload != null) return 'square';
+      if (ds.grpImage != null || ds.grpUpload != null) return 'square';
+      if (ds.rgImage != null || ds.rgUpload != null) return 'gallery';
+      if (ds.meImage != null || ds.meUpload != null) return 'square';
+      if (
+        ds.iwsLeftImage != null ||
+        ds.iwsLeftUpload != null ||
+        ds.iwsRightImage != null ||
+        ds.iwsRightUpload != null
+      ) {
+        return 'portrait';
+      }
+      if (ds.gitTopImage != null || ds.gitTopUpload != null) return 'gallery';
+      if (
+        ds.gitLeftImage != null ||
+        ds.gitLeftUpload != null ||
+        ds.gitRightImage != null ||
+        ds.gitRightUpload != null
+      ) {
+        return 'process';
+      }
+      if (ds.wcMissionImage != null || ds.wcMissionUpload != null) return 'gallery';
+      if (ds.wcVisionIcon != null || ds.wcVisionUpload != null) return 'icon';
+      if (ds.teamPick != null || ds.teamK === 'image') return 'portrait';
+      if (input.id === 'logoSrc') return 'logo';
+      const hint = (
+        (input.placeholder || '') +
+        ' ' +
+        (input.previousElementSibling && input.previousElementSibling.textContent
+          ? input.previousElementSibling.textContent
+          : '') +
+        ' ' +
+        (input.closest('.hrg-slot') && input.closest('.hrg-slot').querySelector('h4')
+          ? input.closest('.hrg-slot').querySelector('h4').textContent
+          : '') +
+        ' ' +
+        (input.closest('.page-card') && input.closest('.page-card').querySelector('h3')
+          ? input.closest('.page-card').querySelector('h3').textContent
+          : '') +
+        ' ' +
+        (input.dataset.pageField || '')
+      ).toLowerCase();
+      if (/flag/.test(hint)) return 'flag';
+      if (/vision icon|icon url|icon path/.test(hint)) return 'icon';
+      if (/logo/.test(hint)) return 'logo';
+      if (/license image|certificate/.test(hint)) return 'certificate';
+      if (/hero|banner|background/.test(hint)) return 'banner';
+      if (/leadership|portrait|team|member/.test(hint)) return 'portrait';
+      if (/collage|events|offices gallery/.test(hint)) return 'collage';
+      if (/jewellery collection|collection/.test(hint)) return 'square';
+      if (/process|achievement/.test(hint)) return 'process';
+      return 'gallery';
+    }
+
+    async function uploadCroppedMedia(file, presetId) {
+      if (!getKey()) {
+        showMsg('Sign in again.', 'bad');
+        return null;
+      }
+      const preset = IMAGE_PRESETS[presetId] || IMAGE_PRESETS.gallery;
+      const qs = preset.query || 'category=general';
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/media' + (qs ? '?' + qs : ''), {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + getKey() },
+        body: fd,
+      });
+      if (r.status === 401) {
+        showMsg('Unauthorized.', 'bad');
+        return null;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        showMsg(err.error || 'Upload failed', 'bad');
+        return null;
+      }
+      return r.json();
     }
 
     function openVideoHeroPreviewModal(file, leadText) {
@@ -4110,18 +4441,139 @@
       el('mediaPickerModal').setAttribute('aria-hidden', 'true');
     }
 
+    function mediaPreviewSrc(src) {
+      const trimmed = typeof src === 'string' ? src.trim() : '';
+      return trimmed || MEDIA_FALLBACK;
+    }
+
+    function applyThumbAspect(img, presetId) {
+      const preset = IMAGE_PRESETS[presetId];
+      if (!preset || !img) return;
+      if (preset.aspect > 0) img.style.aspectRatio = String(preset.aspect);
+      img.style.objectFit = preset.previewContain || preset.previewCircle ? 'contain' : 'cover';
+      img.style.borderRadius = preset.previewCircle ? '999px' : (preset.previewRadius || '8px');
+      img.style.maxHeight = (preset.previewH || 140) + 'px';
+      img.style.maxWidth = (preset.previewW || 280) + 'px';
+    }
+
+    function bindThumbPreview(img, src, presetId) {
+      const trimmed = typeof src === 'string' ? src.trim() : '';
+      img.classList.add('hrg-thumb-preview');
+      img.alt = trimmed ? 'Image preview' : 'Image coming soon';
+      img.src = mediaPreviewSrc(src);
+      if (!trimmed) img.dataset.placeholder = 'true';
+      else delete img.dataset.placeholder;
+      if (presetId) applyThumbAspect(img, presetId);
+      img.onerror = function () {
+        if (img.getAttribute('src') === MEDIA_FALLBACK) return;
+        img.dataset.placeholder = 'true';
+        img.alt = 'Image coming soon';
+        img.src = MEDIA_FALLBACK;
+      };
+    }
+
+    function appendThumbPreview(parent, src, presetId) {
+      const prev = document.createElement('img');
+      const input = parent.querySelector('input[type="text"][placeholder]');
+      bindThumbPreview(
+        prev,
+        src,
+        presetId || (input ? inferCropPreset(input) : 'gallery')
+      );
+      parent.appendChild(prev);
+      return prev;
+    }
+
+    function findPreviewForInput(input) {
+      let node = input.nextElementSibling;
+      while (node) {
+        if (node.classList && node.classList.contains('hrg-thumb-preview')) return node;
+        if (
+          node.tagName === 'LABEL' ||
+          node.tagName === 'INPUT' ||
+          node.tagName === 'TEXTAREA' ||
+          node.tagName === 'H3' ||
+          node.tagName === 'H4' ||
+          node.tagName === 'SECTION'
+        ) {
+          return null;
+        }
+        node = node.nextElementSibling;
+      }
+      return null;
+    }
+
+    function attachImagePreview(input) {
+      if (input.dataset.mediaPreviewReady) return;
+      input.dataset.mediaPreviewReady = '1';
+      let prev = findPreviewForInput(input);
+      if (!prev) {
+        prev = document.createElement('img');
+        const after =
+          input.nextElementSibling &&
+          input.nextElementSibling.classList.contains('media-picker-button')
+            ? input.nextElementSibling
+            : input;
+        after.insertAdjacentElement('afterend', prev);
+      }
+      const presetId = inferCropPreset(input);
+      applyThumbAspect(prev, presetId);
+      bindThumbPreview(prev, input.value, presetId);
+      const sync = () => bindThumbPreview(prev, input.value, inferCropPreset(input));
+      input.addEventListener('input', sync);
+      input.addEventListener('change', sync);
+    }
+
+    function looksLikeMediaUrlInput(input) {
+      const hint = ((input.placeholder || '') + ' ' + (input.value || '')).toLowerCase();
+      if (/tel:|mailto:/.test(hint) && !/(\/images\/|\/uploads\/|\/videos\/)/.test(hint)) {
+        return false;
+      }
+      return /(\/images\/|\/videos\/|\/uploads\/|https?:|path|url)/.test(hint);
+    }
+
+    function startCroppedFieldUpload(input) {
+      const picker = document.createElement('input');
+      picker.type = 'file';
+      picker.accept = 'image/*';
+      picker.addEventListener('change', async () => {
+        const file = picker.files && picker.files[0];
+        if (!file) return;
+        const presetId = inferCropPreset(input);
+        const cropped = await pickCroppedImage(file, presetId);
+        if (!cropped) return;
+        const data = await uploadCroppedMedia(cropped, presetId);
+        if (!data || !data.url) return;
+        input.value = data.url;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        showMsg('Image uploaded into this field — remember to Save.', 'ok');
+      });
+      picker.click();
+    }
+
     function installMediaPickerButtons(root) {
       (root || document).querySelectorAll('input[type="text"]').forEach((input) => {
-        if (input.dataset.mediaPickerReady || input.closest('#view-media') || input.closest('#mediaPickerModal')) return;
-        const hint = (input.placeholder + ' ' + input.value).toLowerCase();
-        if (!/(\/images\/|\/videos\/|\/uploads\/|https?:|path|url)/.test(hint)) return;
-        input.dataset.mediaPickerReady = '1';
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'secondary media-picker-button';
-        button.textContent = 'Choose from library';
-        button.addEventListener('click', () => openMediaPicker(input));
-        input.insertAdjacentElement('afterend', button);
+        if (input.closest('#view-media') || input.closest('#mediaPickerModal')) return;
+        if (!looksLikeMediaUrlInput(input)) return;
+        if (!input.dataset.mediaPickerReady) {
+          input.dataset.mediaPickerReady = '1';
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'secondary media-picker-button';
+          button.textContent = 'Choose from library';
+          button.addEventListener('click', () => openMediaPicker(input));
+          input.insertAdjacentElement('afterend', button);
+          const uploadBtn = document.createElement('button');
+          uploadBtn.type = 'button';
+          uploadBtn.className = 'secondary media-crop-upload';
+          uploadBtn.textContent = 'Upload & crop';
+          const preset = IMAGE_PRESETS[inferCropPreset(input)] || IMAGE_PRESETS.gallery;
+          uploadBtn.title = preset.hint;
+          uploadBtn.addEventListener('click', () => startCroppedFieldUpload(input));
+          button.insertAdjacentElement('afterend', uploadBtn);
+        }
+        attachImagePreview(input);
       });
     }
 
@@ -4276,12 +4728,12 @@
       const type = slide.type === 'video' ? 'video' : 'image';
       box.innerHTML = '';
       if (!url) {
-        const s = document.createElement('span');
-        s.className = 'preview-empty';
-        s.textContent = 'No preview — add a URL or choose a file';
-        box.appendChild(s);
+        const img = document.createElement('img');
+        bindThumbPreview(img, '');
+        img.removeAttribute('class');
+        box.appendChild(img);
         hintEl.className = 'slide-aspect-hint unknown';
-        hintEl.textContent = 'Dimensions appear when media is loaded';
+        hintEl.textContent = 'Placeholder shown until media is uploaded';
         return;
       }
       hintEl.className = 'slide-aspect-hint unknown';
@@ -4314,8 +4766,11 @@
         img.alt = slide.alt || '';
         img.loading = 'lazy';
         img.addEventListener('error', () => {
-          box.innerHTML =
-            '<span class="preview-error">Could not load image (check URL)</span>';
+          box.innerHTML = '';
+          const fallback = document.createElement('img');
+          bindThumbPreview(fallback, '');
+          fallback.removeAttribute('class');
+          box.appendChild(fallback);
           setAspectHintUnknown(hintEl);
         });
         box.appendChild(img);
@@ -4460,32 +4915,8 @@
           }
 
           if (mime.startsWith('image/') && isRasterImageForCrop(f)) {
-            let needCrop = false;
-            try {
-              const { w, h } = await measureLocalFile(f);
-              const hint = formatAspectHint(w, h);
-              needCrop = hint.level === 'bad' || hint.level === 'warn';
-            } catch (_) {
-              needCrop = true;
-            }
-
-            let fileToUpload = f;
-            if (needCrop) {
-              if (typeof Cropper === 'undefined') {
-                showMsg(
-                  'Crop editor did not load — uploading original. Refresh the page or check your network.',
-                  'bad'
-                );
-              } else {
-                const cropped = await openImageCropModal(f);
-                if (!cropped) {
-                  showMsg('Cropped upload cancelled — slide unchanged.', '');
-                  return;
-                }
-                fileToUpload = cropped;
-              }
-            }
-
+            const fileToUpload = await pickCroppedImage(f, 'hero');
+            if (!fileToUpload) return;
             await uploadSlideMedia(i, fileToUpload);
             return;
           }
@@ -4586,23 +5017,11 @@
       const member = site.teamManagement.members[index];
       const url = String(member.image || '').trim();
       box.innerHTML = '';
-      if (!url) {
-        const s = document.createElement('span');
-        s.className = 'preview-empty';
-        s.textContent = 'No preview — add a URL or choose a photo';
-        box.appendChild(s);
-        return;
-      }
       const img = document.createElement('img');
-      img.src = url;
-      img.alt = member.imageAlt || member.name || '';
-      img.onerror = () => {
-        box.innerHTML = '';
-        const s = document.createElement('span');
-        s.className = 'preview-empty';
-        s.textContent = 'Could not load image';
-        box.appendChild(s);
-      };
+      bindThumbPreview(img, url);
+      img.alt = url
+        ? member.imageAlt || member.name || 'Image preview'
+        : 'Image coming soon';
       box.appendChild(img);
     }
 
@@ -4686,7 +5105,9 @@
             showMsg('Choose an image file.', 'bad');
             return;
           }
-          await uploadTeamPortrait(i, f);
+          const cropped = await pickCroppedImage(f, 'portrait');
+          if (!cropped) return;
+          await uploadTeamPortrait(i, cropped);
         });
         card.querySelectorAll('[data-team-k]').forEach((input) => {
           input.addEventListener('input', (e) => {
@@ -4981,10 +5402,12 @@
       renderTeamMembers();
     });
 
-    el('logoPick').addEventListener('change', (e) => {
+    el('logoPick').addEventListener('change', async (e) => {
       const f = e.target.files && e.target.files[0];
       e.target.value = '';
-      if (f) uploadBrandingLogo(f);
+      if (!f) return;
+      const cropped = await pickCroppedImage(f, 'logo');
+      if (cropped) uploadBrandingLogo(cropped);
     });
 
     function closeNavMenu() {
@@ -5183,20 +5606,30 @@
       const files = [...(event.target.files || [])];
       event.target.value = '';
       try {
+        const presetId = (el('mediaCropPreset') && el('mediaCropPreset').value) || 'gallery';
+        let uploaded = 0;
         for (const file of files) {
+          const ready = (file.type || '').startsWith('video/')
+            ? file
+            : await pickCroppedImage(file, presetId);
+          if (!ready) continue;
           const form = new FormData();
-          form.append('file', file);
-          const response = await fetch('/api/media?category=general', {
+          form.append('file', ready);
+          const preset = IMAGE_PRESETS[presetId] || IMAGE_PRESETS.gallery;
+          const qs = preset.query || 'category=general';
+          const response = await fetch('/api/media' + (qs ? '?' + qs : ''), {
             method: 'POST',
             headers: { Authorization: 'Bearer ' + getKey() },
             body: form,
           });
           const body = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(body.message || body.error || 'Upload failed');
+          uploaded += 1;
         }
         mediaPage = 1;
         await loadMedia(false);
-        showMsg(files.length + ' media file(s) uploaded.', 'ok');
+        if (uploaded) showMsg(uploaded + ' media file(s) uploaded.', 'ok');
+        else showMsg('No files uploaded.', '');
       } catch (error) {
         showMsg(error.message, 'bad');
       }
@@ -5227,6 +5660,25 @@
           await loadMedia(false);
           showMsg('Media deleted.', 'ok');
         }
+      } catch (error) {
+        showMsg(error.message, 'bad');
+      }
+    });
+
+    el('btnMediaCleanup').addEventListener('click', async () => {
+      if (!confirm('Delete uploaded files that no page, section or banner uses?')) return;
+      try {
+        const result = await apiData('/api/media-assets/cleanup', {
+          method: 'POST',
+          headers: authHeaders(),
+        });
+        await loadMedia(false);
+        showMsg(
+          result.removed
+            ? 'Removed ' + result.removed + ' unused file(s).'
+            : 'No unused files found.',
+          'ok'
+        );
       } catch (error) {
         showMsg(error.message, 'bad');
       }
