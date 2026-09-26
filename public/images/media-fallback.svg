@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Image coming soon">
+  <rect width="800" height="600" fill="#100b02"/>
+  <rect x="24" y="24" width="752" height="552" rx="28" fill="none" stroke="#c09038" stroke-width="4"/>
+  <rect x="300" y="168" width="200" height="148" rx="18" fill="none" stroke="#c09038" stroke-width="6"/>
+  <circle cx="400" cy="242" r="28" fill="none" stroke="#c09038" stroke-width="6"/>
+  <path d="M348 168l18-22h68l18 22" fill="none" stroke="#c09038" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="400" y="380" text-anchor="middle" fill="#c09038" font-family="Georgia, 'Times New Roman', serif" font-size="42">JD GOLD</text>
+  <text x="400" y="428" text-anchor="middle" fill="#e8d5a8" font-family="Arial, Helvetica, sans-serif" font-size="22">Image coming soon</text>
+</svg>

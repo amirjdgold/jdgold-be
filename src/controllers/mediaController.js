@@ -1,4 +1,5 @@
 import * as mediaService from '../services/mediaService.js';
+import { sweepUnreferencedMedia } from '../services/mediaCleanup.js';
 import { sendSuccess } from '../utils/response.js';
 
 export async function listMedia(req, res) {
@@ -25,4 +26,13 @@ export async function registerMedia(req, res) {
 
 export async function deleteMedia(req, res) {
   return sendSuccess(res, await mediaService.deleteMedia(req.params.id));
+}
+
+export async function cleanupMedia(_req, res) {
+  const result = await sweepUnreferencedMedia();
+  return sendSuccess(res, {
+    scanned: result.scanned,
+    removed: result.deleted.length,
+    urls: result.deleted,
+  });
 }

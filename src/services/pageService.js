@@ -1,6 +1,7 @@
 import { Page } from '../models/Page.js';
 import { AppError } from '../utils/AppError.js';
 import { assertValidObjectId } from '../utils/mongo.js';
+import { pruneReplacedMedia } from './mediaCleanup.js';
 
 const LIST_PROJECTION = 'slug title pageType sortOrder metaTitle isActive';
 
@@ -35,6 +36,7 @@ export async function updatePageById(id, payload) {
   assertValidObjectId(id, 'page');
 
   try {
+    const previous = await Page.findById(id).lean();
     const page = await Page.findByIdAndUpdate(id, payload, {
       returnDocument: 'after',
       runValidators: true,
@@ -43,6 +45,7 @@ export async function updatePageById(id, payload) {
     if (!page) {
       throw new AppError('Page not found', 404);
     }
+    await pruneReplacedMedia(previous, page, `page ${page.slug}`);
     return page;
   } catch (err) {
     throw mapPageWriteError(err);
@@ -56,6 +59,7 @@ export async function deletePageById(id) {
   if (!page) {
     throw new AppError('Page not found', 404);
   }
+  await pruneReplacedMedia(page, null, `deleted page ${page.slug}`);
   return page;
 }
 

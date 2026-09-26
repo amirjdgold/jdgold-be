@@ -21,6 +21,7 @@ import {
   handleBlobMediaUpload,
 } from './services/blob-media.js';
 import { upsertMediaAsset } from './services/mediaService.js';
+import { pruneReplacedMedia } from './services/mediaCleanup.js';
 import {
   getSiteContent,
   readSiteContentSeed,
@@ -729,7 +730,9 @@ async function createApp() {
         readSiteContentSeed(),
       );
       const merged = mergeSiteContent(existing, parsed.data);
-      res.json(await saveSiteContent(merged));
+      const saved = await saveSiteContent(merged);
+      await pruneReplacedMedia(existing, saved, 'site content');
+      res.json(saved);
     } catch (e) {
       console.error(e);
       res.status(500).json({ error: 'Failed to save content' });
@@ -750,6 +753,7 @@ async function createApp() {
 
   if (!IS_VERCEL) {
     app.use('/uploads/cms', express.static(CMS_UPLOAD_DIR));
+    app.use('/images', express.static(path.join(PUBLIC_DIR, 'images')));
   }
 
   const serveStatic =
