@@ -1,0 +1,8 @@
+{
+  "comment": "Polling: this machine runs out of file-watch descriptors, same reason vite.config.ts sets usePolling.",
+  "legacyWatch": true,
+  "pollingInterval": 500,
+  "watch": ["src", "data"],
+  "ext": "js,mjs,cjs,json",
+  "ignore": ["src/scripts/*", "test/*"]
+}

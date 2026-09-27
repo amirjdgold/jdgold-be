@@ -35,7 +35,7 @@ Health check: `GET http://localhost:3001/api/health`
 | `MONGODB_URI` | MongoDB Atlas connection string |
 | `API_KEY` | strong secret (same as admin login) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob store read/write token |
-| `CORS_ORIGINS` | exact frontend origin, e.g. `https://jdgold-fe.vercel.app` |
+| `CORS_ORIGINS` | frontend origins, e.g. `https://jdgold.llc,https://www.jdgold.llc,https://jdgold-fe.vercel.app`. The Admin origin (`https://jdgold-be.vercel.app`) is always allowed. |
 | `NODE_ENV` | `production` |
 | `SERVE_STATIC` | `false` |
 
@@ -50,7 +50,7 @@ Health check: `GET http://localhost:3001/api/health`
 - Blob completion callbacks are verified by the official Vercel Blob handler. `API_KEY` is checked when issuing a browser upload token, not on provider callbacks.
 - Without `BLOB_READ_WRITE_TOKEN`, local development keeps the existing `uploads/cms` disk upload and image-variant behavior. Disk uploads are intentionally disabled on Vercel.
 - MongoDB must be Atlas in production (not `localhost`).
-- Set `CORS_ORIGINS` to the exact frontend origin (no trailing slash).
+- Set `CORS_ORIGINS` to the exact frontend origins (no trailing slash), including `https://jdgold.llc` and `https://www.jdgold.llc`.
 
 The checked-in `public/admin-upload.js` bundle lets the standalone `public/admin.html` use the official Vercel Blob browser client. Rebuild it after editing `src/browser/admin-upload.js`:
 
