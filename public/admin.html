@@ -33,12 +33,16 @@
       min-height: 100vh;
     }
     header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
       padding: 1rem 1.25rem;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 0.75rem;
+      background: var(--bg);
     }
     h1 {
       margin: 0;
@@ -301,6 +305,22 @@
       border: 1px solid var(--border);
       background: linear-gradient(135deg, #d4af37, #b8860b);
       color: #0a0a0a;
+    }
+    button:not(.nav-item):not(.nav-parent):not(.nav-toggle) {
+      transition: transform 0.08s ease, filter 0.08s ease, box-shadow 0.08s ease, opacity 0.12s ease;
+    }
+    button:not(.nav-item):not(.nav-parent):not(.nav-toggle):hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+    button:not(.nav-item):not(.nav-parent):not(.nav-toggle):active:not(:disabled) {
+      transform: translateY(1px) scale(0.96);
+      filter: brightness(0.88);
+      box-shadow: inset 0 2px 6px rgba(10, 10, 10, 0.35);
+    }
+    button:not(.nav-item):not(.nav-parent):not(.nav-toggle):disabled,
+    button.busy {
+      opacity: 0.7;
+      cursor: wait;
     }
     button.secondary {
       background: transparent;
@@ -642,6 +662,43 @@
     #msg { font-size: 0.85rem; margin-top: 0.5rem; min-height: 1.25rem; }
     #msg.ok { color: #15803d; }
     #msg.bad { color: var(--err); }
+    .toast {
+      position: fixed;
+      top: 4.75rem;
+      right: 1rem;
+      z-index: 1100;
+      max-width: min(28rem, calc(100vw - 2rem));
+      padding: 0.9rem 1.15rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      font-size: 0.92rem;
+      font-weight: 600;
+      line-height: 1.35;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-10px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+    }
+    .toast.ok {
+      background: #14532d;
+      color: #ecfdf5;
+      border: 1px solid #16a34a;
+    }
+    .toast.bad {
+      background: #7f1d1d;
+      color: #fef2f2;
+      border: 1px solid #ef4444;
+    }
+    .toast.info {
+      background: #1f2937;
+      color: #f9fafb;
+      border: 1px solid #6b7280;
+    }
     .hint { font-size: 0.8rem; color: var(--muted); margin: 0 0 0.75rem; }
     #loginPanel label { margin-top: 0.35rem; }
     .hidden { display: none !important; }
@@ -775,14 +832,29 @@
     }
     textarea {
       width: 100%;
-      min-height: 26rem;
-      padding: 0.65rem;
+      box-sizing: border-box;
+      padding: 0.45rem 0.55rem;
       border: 1px solid var(--border);
       border-radius: 6px;
       background: var(--input-bg);
       color: var(--text);
-      font: 0.8rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-family: inherit;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin-bottom: 0.65rem;
+      height: calc(1.45em * 3 + 0.9rem);
+      min-height: calc(1.45em * 3 + 0.9rem);
+      max-height: calc(1.45em * 3 + 0.9rem);
+      overflow-y: auto;
+      resize: none;
+    }
+    #pageJson {
+      min-height: 26rem;
+      height: 26rem;
+      max-height: none;
+      margin-bottom: 0;
       resize: vertical;
+      font: 0.8rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     .media-grid {
       display: grid;
@@ -972,9 +1044,8 @@
 
           <div id="view-team" class="view-panel hidden">
             <p class="hint">
-              <strong>Portrait photos</strong> for the management column on the home page. Uploads are
-              optimized to <strong>3∶4 / 640×854</strong> after the crop preview. You can also paste a path under
-              <code>/images/</code> or <code>/uploads/cms/</code>.
+              <strong>Portrait photos</strong> for the management column on the home page. Uploads open a
+              <strong>4∶3 crop</strong> matching the Home team cards. Keep the face fully inside the frame.
             </p>
             <section>
               <h2>Team management</h2>
@@ -1001,8 +1072,7 @@
               <strong>Right column on the home page:</strong> five blocks (Staff, Refinery, License &amp; Office,
               Jewelry factory, Products). License &amp; Office uses <strong>three</strong> images; Staff, Refinery,
               Jewelry factory, and Products use <strong>six</strong> (two rows of three on the site).
-              Uploads open a <strong>1∶1 crop preview</strong> (800×800) matching the three-across tiles. You can also paste a path under
-              <code>/images/</code> or <code>/uploads/cms/</code>.
+              Uploads open a <strong>5∶3 crop preview</strong> matching the three-across tiles. Keep faces fully inside the frame.
             </p>
             <section>
               <h2>Home — right gallery</h2>
@@ -1024,7 +1094,7 @@
           <div id="view-building-trust" class="view-panel hidden">
             <p class="hint">
               <strong>“Building Trust in Gold”</strong> row on the home page: section heading and five
-              image tiles. Uploads open a <strong>1∶1 crop preview</strong> matching the five home tiles.
+              image tiles. Uploads open a <strong>3∶2 crop preview</strong> matching the five home tiles.
             </p>
             <section>
               <h2>Building Trust in Gold</h2>
@@ -1035,7 +1105,7 @@
           <div id="view-gold-products" class="view-panel hidden">
             <p class="hint">
               <strong>“Our Gold Products”</strong> row: section heading and six product cards (label,
-              image, optional alt). Uploads open a <strong>1∶1 crop preview</strong> matching the product cards.
+              image, optional alt). Uploads open a <strong>5∶4 crop preview</strong> matching the product cards.
             </p>
             <section>
               <h2>Our Gold Products</h2>
@@ -1046,7 +1116,7 @@
           <div id="view-gold-refining" class="view-panel hidden">
             <p class="hint">
               <strong>“Our Gold Refining Process”</strong>: heading and six step cards (step number,
-              title, background image). Uploads open a <strong>1∶1 crop preview</strong> matching the step cards.
+              title, background image). Uploads open a <strong>3∶2 crop preview</strong> matching the step cards.
             </p>
             <section>
               <h2>Gold Refining Process</h2>
@@ -1057,7 +1127,7 @@
           <div id="view-refining-gallery" class="view-panel hidden">
             <p class="hint">
               Three-image row below the refining process (no heading). Uploads open a
-              <strong>2∶1 crop preview</strong> matching the wide tiles.
+              <strong>12∶5 crop preview</strong> matching the three-across tiles.
             </p>
             <section>
               <h2>Refining gallery</h2>
@@ -1068,7 +1138,7 @@
           <div id="view-industries-serve" class="view-panel hidden">
             <p class="hint">
               <strong>“Industries We Serve”</strong>: section heading, left and right side photos, and six
-              industry labels in the center grid. Side photos open a <strong>3∶4 crop preview</strong>.
+              industry labels in the center grid. Side photos open a <strong>3∶2 crop preview</strong>.
             </p>
             <section>
               <h2>Industries We Serve</h2>
@@ -1079,7 +1149,7 @@
           <div id="view-mining-extraction" class="view-panel hidden">
             <p class="hint">
               <strong>“Mining &amp; Extraction”</strong>: section heading and five image tiles in a row.
-              Uploads open a <strong>1∶1 crop preview</strong> matching the five home tiles.
+              Uploads open a <strong>3∶2 crop preview</strong> matching the five home tiles.
             </p>
             <section>
               <h2>Mining &amp; Extraction</h2>
@@ -1102,7 +1172,7 @@
             <p class="hint">
               <strong>“Get in Touch”</strong>: top gallery (3 images), contact card (heading, phone,
               WhatsApp, email, address), and side license photos. Top images use a
-              <strong>2∶1 crop</strong>; side photos use a <strong>4∶3 crop</strong>.
+              <strong>12∶5 crop</strong>; side photos use a <strong>4∶3 crop</strong>. Keep faces fully inside the frame.
             </p>
             <section>
               <h2>Get in Touch</h2>
@@ -1138,13 +1208,18 @@
                   <input type="file" id="mediaUpload" accept="image/*,video/*" multiple />
                 </label>
                 <select id="mediaCropPreset" style="max-width:220px;margin:0" title="Crop frame used when uploading images">
-                  <option value="gallery">Crop: wide gallery 2∶1</option>
+                  <option value="thumb">Crop: Home gallery 5∶3</option>
+                  <option value="tile">Crop: Home row 3∶2</option>
+                  <option value="product">Crop: product card 5∶4</option>
+                  <option value="wideRow">Crop: three-across 12∶5</option>
+                  <option value="gallery">Crop: wide photo 2∶1</option>
                   <option value="hero">Crop: homepage slider 12∶5</option>
                   <option value="portrait">Crop: portrait 3∶4</option>
+                  <option value="teamHome">Crop: Home team 4∶3</option>
                   <option value="square">Crop: square 1∶1</option>
                   <option value="process">Crop: process card 4∶3</option>
                   <option value="banner">Crop: wide banner 16∶7</option>
-                  <option value="collage">Crop: collage 8∶3</option>
+                  <option value="collage">Crop: collage 4∶3</option>
                   <option value="wideBand">Crop: full-width band 4∶1</option>
                   <option value="logo">Crop: logo 3∶1</option>
                   <option value="icon">Crop: icon 1∶1</option>
@@ -1211,6 +1286,7 @@
     </div>
   </main>
 
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div id="slideCropModal" class="crop-modal hidden" aria-hidden="true">
     <div class="crop-modal-backdrop" id="slideCropBackdrop" tabindex="-1"></div>
     <div class="crop-modal-panel" role="dialog" aria-modal="true" aria-labelledby="slideCropTitle">
@@ -1488,7 +1564,7 @@
     }
 
     async function uploadHrgSlot(key, slotIndex, file) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -1513,7 +1589,7 @@
       ensureHomeRightGallery();
       site.homeRightGallery[key].slots[slotIndex].image = data.url;
       renderHomeRightGallery();
-      showMsg('Image uploaded — remember to Save changes.', 'ok');
+      showMsg('Image uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onHomeRightGalleryFileChange(e) {
@@ -1862,7 +1938,7 @@
     }
 
     async function uploadWhyChooseMissionImage(file) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -1887,11 +1963,11 @@
       ensureWhyChooseSection();
       site.whyChooseSection.missionImage = data.url;
       renderWhyChooseSection();
-      showMsg('Mission photo uploaded — remember to Save changes.', 'ok');
+      showMsg('Mission photo uploaded successfully. Click Save to publish.', 'ok');
     }
 
     async function uploadWhyChooseVisionIcon(file) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -1916,7 +1992,7 @@
       ensureWhyChooseSection();
       site.whyChooseSection.visionIcon = data.url;
       renderWhyChooseSection();
-      showMsg('Vision icon uploaded — remember to Save changes.', 'ok');
+      showMsg('Vision icon uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onWhyChooseFileChange(e) {
@@ -2100,7 +2176,7 @@
     }
 
     async function uploadBuildingTrustImage(file, slotIndex) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -2125,7 +2201,7 @@
       ensureBuildingTrustSection();
       site.buildingTrustSection.slots[slotIndex].image = data.url;
       renderBuildingTrustSection();
-      showMsg('Image ' + (slotIndex + 1) + ' uploaded — remember to Save changes.', 'ok');
+      showMsg('Image ' + (slotIndex + 1) + ' uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onBuildingTrustFileChange(e) {
@@ -2310,7 +2386,7 @@
     }
 
     async function uploadGoldProductImage(file, productIndex) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -2335,7 +2411,7 @@
       ensureGoldProductsSection();
       site.goldProductsSection.products[productIndex].image = data.url;
       renderGoldProductsSection();
-      showMsg('Product ' + (productIndex + 1) + ' image uploaded — remember to Save changes.', 'ok');
+      showMsg('Product ' + (productIndex + 1) + ' image uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onGoldProductsFileChange(e) {
@@ -2513,7 +2589,7 @@
     }
 
     async function uploadGoldRefiningStepImage(file, stepIndex) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -2538,7 +2614,7 @@
       ensureGoldRefiningProcessSection();
       site.goldRefiningProcessSection.steps[stepIndex].image = data.url;
       renderGoldRefiningProcessSection();
-      showMsg('Step ' + (stepIndex + 1) + ' image uploaded — remember to Save changes.', 'ok');
+      showMsg('Step ' + (stepIndex + 1) + ' image uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onGoldRefiningFileChange(e) {
@@ -2669,7 +2745,7 @@
     }
 
     async function uploadRefiningGalleryImage(file, slotIndex) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -2694,7 +2770,7 @@
       ensureRefiningGallerySection();
       site.refiningGallerySection.slots[slotIndex].image = data.url;
       renderRefiningGallerySection();
-      showMsg('Gallery image ' + (slotIndex + 1) + ' uploaded — remember to Save changes.', 'ok');
+      showMsg('Gallery image ' + (slotIndex + 1) + ' uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onRefiningGalleryFileChange(e) {
@@ -2902,7 +2978,7 @@
     }
 
     async function uploadIndustriesWeServeSideImage(file, side) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -2929,7 +3005,7 @@
       else site.industriesWeServeSection.rightImage = data.url;
       renderIndustriesWeServeSection();
       showMsg(
-        (side === 'left' ? 'Left' : 'Right') + ' photo uploaded — remember to Save changes.',
+        (side === 'left' ? 'Left' : 'Right') + ' photo uploaded successfully. Click Save to publish.',
         'ok',
       );
     }
@@ -3086,7 +3162,7 @@
     }
 
     async function uploadMiningExtractionImage(file, slotIndex) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -3111,7 +3187,7 @@
       ensureMiningExtractionSection();
       site.miningExtractionSection.slots[slotIndex].image = data.url;
       renderMiningExtractionSection();
-      showMsg('Image ' + (slotIndex + 1) + ' uploaded — remember to Save changes.', 'ok');
+      showMsg('Image ' + (slotIndex + 1) + ' uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onMiningExtractionFileChange(e) {
@@ -3527,7 +3603,7 @@
     }
 
     async function uploadGetInTouchGallery(file, kind, index) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -3555,7 +3631,7 @@
       else if (kind === 'left') g.leftImage = data.url;
       else g.rightImage = data.url;
       renderGetInTouchSection();
-      showMsg('Image uploaded — remember to Save changes.', 'ok');
+      showMsg('Image uploaded successfully. Click Save to publish.', 'ok');
     }
 
     function onGetInTouchFileChange(e) {
@@ -3710,20 +3786,20 @@
       hero: {
         id: 'hero',
         title: 'Crop for homepage slider',
-        hint: 'Locked to 12∶5 (1200×500). Matches the homepage center tile on desktop and the scaled phone layout.',
+        hint: 'Locked to 12∶5 (1200×500). Matches the slider tiles. Keep faces in the center of the frame.',
         aspect: 12 / 5,
         exportW: 1200,
         exportH: 500,
         previewW: 360,
         previewH: 150,
         previewLabel: 'Homepage slider — center tile',
-        previewContain: true,
+        previewContain: false,
         query: '',
       },
       portrait: {
         id: 'portrait',
         title: 'Crop for portrait card',
-        hint: 'Locked to 3∶4 (640×854). Used for Home team, Management leaders, Sales/Contact cards, and About portraits.',
+        hint: 'Locked to 3∶4 (640×854). Used for Management leaders, Sales/Contact cards, and About portraits. Keep the face in the upper half.',
         aspect: 3 / 4,
         exportW: 640,
         exportH: 854,
@@ -3733,23 +3809,88 @@
         previewRadius: '16px',
         query: 'portrait=1',
       },
+      teamHome: {
+        id: 'teamHome',
+        title: 'Crop for Home team card',
+        hint: 'Locked to 4∶3 (640×480). Matches the Home management column. Keep the face fully inside the frame.',
+        aspect: 4 / 3,
+        exportW: 640,
+        exportH: 480,
+        previewW: 224,
+        previewH: 168,
+        previewLabel: 'Home team card',
+        previewRadius: '16px',
+        query: 'gallery=1',
+      },
       gallery: {
         id: 'gallery',
-        title: 'Crop for wide gallery tile',
-        hint: 'Locked to 2∶1 (720×360). Used for Home galleries, Building Trust, Get in Touch, Mining, and wide tiles.',
+        title: 'Crop for 2∶1 photo',
+        hint: 'Locked to 2∶1 (960×480). Used for Why Choose mission photo and similar wide frames.',
         aspect: 2,
-        exportW: 720,
-        exportH: 360,
+        exportW: 960,
+        exportH: 480,
         previewW: 280,
         previewH: 140,
-        previewLabel: 'Gallery tile on the website',
+        previewLabel: 'Wide photo on the website',
+        previewRadius: '16px',
+        query: 'gallery=1',
+      },
+      thumb: {
+        id: 'thumb',
+        title: 'Crop for Home gallery tile',
+        hint: 'Locked to 5∶3 (800×480). Matches the three-across Home Staff / Refinery / Products tiles.',
+        aspect: 5 / 3,
+        exportW: 800,
+        exportH: 480,
+        previewW: 250,
+        previewH: 150,
+        previewLabel: 'Home gallery tile',
+        previewRadius: '16px',
+        query: 'gallery=1',
+      },
+      tile: {
+        id: 'tile',
+        title: 'Crop for Home row tile',
+        hint: 'Locked to 3∶2 (900×600). Matches Building Trust, Mining, Refining steps, and Industries side photos.',
+        aspect: 3 / 2,
+        exportW: 900,
+        exportH: 600,
+        previewW: 240,
+        previewH: 160,
+        previewLabel: 'Home row tile',
+        previewRadius: '16px',
+        query: 'gallery=1',
+      },
+      product: {
+        id: 'product',
+        title: 'Crop for product card',
+        hint: 'Locked to 5∶4 (750×600). Matches the six Home product cards.',
+        aspect: 5 / 4,
+        exportW: 750,
+        exportH: 600,
+        previewW: 200,
+        previewH: 160,
+        previewLabel: 'Product card',
+        previewRadius: '16px',
+        query: 'gallery=1',
+      },
+      wideRow: {
+        id: 'wideRow',
+        title: 'Crop for three-across band',
+        hint: 'Locked to 12∶5 (1200×500). Matches Get in Touch top photos and the refining gallery row.',
+        aspect: 12 / 5,
+        exportW: 1200,
+        exportH: 500,
+        previewW: 288,
+        previewH: 120,
+        previewLabel: 'Three-across photo',
         previewRadius: '16px',
         query: 'gallery=1',
       },
       square: {
         id: 'square',
         title: 'Crop for square tile',
-        hint: 'Locked to 1∶1 (800×800). Used for jewellery collection tiles.',
+        hint: 'Locked to 1∶1 (800×800). Used for jewellery collection tiles and Products page photos.',
         aspect: 1,
         exportW: 800,
         exportH: 800,
@@ -3761,7 +3902,7 @@
       process: {
         id: 'process',
         title: 'Crop for process / product card',
-        hint: 'Locked to 4∶3 (800×600). Used for Factory process cards and achievement photos.',
+        hint: 'Locked to 4∶3 (800×600). Used for Factory process cards, Get in Touch side photos, and achievement photos.',
         aspect: 4 / 3,
         exportW: 800,
         exportH: 600,
@@ -3773,7 +3914,7 @@
       banner: {
         id: 'banner',
         title: 'Crop for wide page banner',
-        hint: 'Locked to 16∶7 (1280×560). Used for inner-page heroes (About/Sales/Contact/Licenses/Factory bands).',
+        hint: 'Locked to 16∶7 (1280×560). Wide banner crop for media library uploads.',
         aspect: 16 / 7,
         exportW: 1280,
         exportH: 560,
@@ -3786,12 +3927,12 @@
       collage: {
         id: 'collage',
         title: 'Crop for collage photo',
-        hint: 'Locked to 8∶3 (960×360). Events/Offices collage tiles are wide; object-cover fills mixed spans.',
-        aspect: 8 / 3,
+        hint: 'Locked to 4∶3 (960×720). Collage tiles vary in size; keep the subject in the center.',
+        aspect: 4 / 3,
         exportW: 960,
-        exportH: 360,
+        exportH: 720,
         previewW: 240,
-        previewH: 90,
+        previewH: 180,
         previewLabel: 'Collage tile on the website',
         query: 'gallery=1',
       },
@@ -3862,14 +4003,14 @@
       general: {
         id: 'general',
         title: 'Crop image',
-        hint: 'Free crop. Choose a frame that matches where you will place this file.',
+        hint: 'Free crop. Choose a frame that matches where you will place this file. Keep faces fully inside.',
         aspect: 0,
         exportW: 1600,
         exportH: 1600,
         previewW: 240,
         previewH: 160,
         previewLabel: 'Cropped result',
-        previewContain: true,
+        previewContain: false,
         query: 'category=general',
       },
     };
@@ -4094,21 +4235,21 @@
       const explicit = input.dataset.cropPreset;
       if (explicit && IMAGE_PRESETS[explicit]) return explicit;
       const ds = input.dataset;
-      if (ds.hrgImage != null || ds.hrgUpload != null) return 'square';
-      if (ds.gpImage != null || ds.gpUpload != null) return 'square';
-      if (ds.btImage != null || ds.btUpload != null) return 'square';
-      if (ds.grpImage != null || ds.grpUpload != null) return 'square';
-      if (ds.rgImage != null || ds.rgUpload != null) return 'gallery';
-      if (ds.meImage != null || ds.meUpload != null) return 'square';
+      if (ds.hrgImage != null || ds.hrgUpload != null) return 'thumb';
+      if (ds.gpImage != null || ds.gpUpload != null) return 'product';
+      if (ds.btImage != null || ds.btUpload != null) return 'tile';
+      if (ds.grpImage != null || ds.grpUpload != null) return 'tile';
+      if (ds.rgImage != null || ds.rgUpload != null) return 'wideRow';
+      if (ds.meImage != null || ds.meUpload != null) return 'tile';
       if (
         ds.iwsLeftImage != null ||
         ds.iwsLeftUpload != null ||
         ds.iwsRightImage != null ||
         ds.iwsRightUpload != null
       ) {
-        return 'portrait';
+        return 'tile';
       }
-      if (ds.gitTopImage != null || ds.gitTopUpload != null) return 'gallery';
+      if (ds.gitTopImage != null || ds.gitTopUpload != null) return 'wideRow';
       if (
         ds.gitLeftImage != null ||
         ds.gitLeftUpload != null ||
@@ -4119,7 +4260,7 @@
       }
       if (ds.wcMissionImage != null || ds.wcMissionUpload != null) return 'gallery';
       if (ds.wcVisionIcon != null || ds.wcVisionUpload != null) return 'icon';
-      if (ds.teamPick != null || ds.teamK === 'image') return 'portrait';
+      if (ds.teamPick != null || ds.teamK === 'image') return 'teamHome';
       if (input.id === 'logoSrc') return 'logo';
       const hint = (
         (input.placeholder || '') +
@@ -4233,6 +4374,40 @@
     function showMsg(text, kind) {
       msg.textContent = text || '';
       msg.className = kind === 'ok' ? 'ok' : kind === 'bad' ? 'bad' : '';
+      showToast(text, kind);
+    }
+
+    function showToast(text, kind) {
+      const toast = el('toast');
+      if (!toast) return;
+      clearTimeout(showToast.hideTimer);
+      if (!text) {
+        toast.classList.remove('show');
+        toast.textContent = '';
+        return;
+      }
+      toast.textContent = text;
+      toast.className =
+        'toast show ' + (kind === 'ok' ? 'ok' : kind === 'bad' ? 'bad' : 'info');
+      showToast.hideTimer = setTimeout(
+        () => toast.classList.remove('show'),
+        kind === 'bad' ? 8000 : 4500,
+      );
+    }
+
+    async function withBusyButton(button, label, work) {
+      if (!button) return work();
+      const original = button.textContent;
+      button.disabled = true;
+      button.classList.add('busy');
+      button.textContent = label || 'Saving…';
+      try {
+        return await work();
+      } finally {
+        button.disabled = false;
+        button.classList.remove('busy');
+        button.textContent = original;
+      }
     }
 
     function getKey() {
@@ -4547,7 +4722,7 @@
         input.value = data.url;
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
-        showMsg('Image uploaded into this field — remember to Save.', 'ok');
+        showMsg('Image uploaded successfully. Click Save to publish.', 'ok');
       });
       picker.click();
     }
@@ -4642,7 +4817,7 @@
     }
 
     async function uploadBrandingLogo(file) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return;
@@ -4670,11 +4845,11 @@
           .replace(/\.[^.]+$/, '')
           .replace(/[-_]+/g, ' ');
       }
-      showMsg('Logo uploaded — remember to Save changes.', 'ok');
+      showMsg('Logo uploaded successfully. Click Save to publish.', 'ok');
     }
 
     async function uploadSlideMedia(index, file) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return false;
@@ -4714,7 +4889,7 @@
         delete slide.thumbSrcSm;
         delete slide.srcSm;
       }
-      showMsg('File uploaded — remember to Save changes.', 'ok');
+      showMsg('File uploaded successfully. Click Save to publish.', 'ok');
       renderSlides();
       return true;
     }
@@ -4909,7 +5084,7 @@
 
             const uploaded = await uploadSlideMedia(i, f);
             if (uploaded && aspectNote && (hintLevel === 'bad' || hintLevel === 'warn')) {
-              showMsg('Uploaded — Save changes. ' + aspectNote, aspectBad ? 'bad' : 'ok');
+              showMsg('Uploaded successfully. Click Save to publish. ' + aspectNote, aspectBad ? 'bad' : 'ok');
             }
             return;
           }
@@ -4936,7 +5111,7 @@
           } catch (_) {}
           const uploaded = await uploadSlideMedia(i, f);
           if (uploaded && aspectNote) {
-            showMsg('Uploaded — Save changes. ' + aspectNote, aspectBad ? 'bad' : 'ok');
+            showMsg('Uploaded successfully. Click Save to publish. ' + aspectNote, aspectBad ? 'bad' : 'ok');
           }
         });
         card.querySelector('[data-k="src"]').addEventListener('input', (e) => {
@@ -4977,7 +5152,7 @@
     }
 
     async function uploadTeamPortrait(index, file) {
-      showMsg('');
+      showMsg('Uploading…', '');
       if (!getKey()) {
         showMsg('Sign in again.', 'bad');
         return false;
@@ -5007,7 +5182,7 @@
           .replace(/[-_]+/g, ' ');
       }
       renderTeamMembers();
-      showMsg('Photo uploaded — Save changes.', 'ok');
+      showMsg('Photo uploaded successfully. Click Save to publish.', 'ok');
       return true;
     }
 
@@ -5018,7 +5193,7 @@
       const url = String(member.image || '').trim();
       box.innerHTML = '';
       const img = document.createElement('img');
-      bindThumbPreview(img, url);
+      bindThumbPreview(img, url, 'teamHome');
       img.alt = url
         ? member.imageAlt || member.name || 'Image preview'
         : 'Image coming soon';
@@ -5059,7 +5234,7 @@
           '" accept="image/*" />' +
           '</label>' +
           '</div>' +
-          '<div class="slide-preview team-preview hero-preview-frame" style="aspect-ratio:4/5;max-width:200px"></div>' +
+          '<div class="slide-preview team-preview hero-preview-frame" style="aspect-ratio:4/3;max-width:220px"></div>' +
           '<label>Path / URL</label>' +
           '<input type="text" data-team-k="image" data-team-i="' +
           index +
@@ -5105,7 +5280,7 @@
             showMsg('Choose an image file.', 'bad');
             return;
           }
-          const cropped = await pickCroppedImage(f, 'portrait');
+          const cropped = await pickCroppedImage(f, 'teamHome');
           if (!cropped) return;
           await uploadTeamPortrait(i, cropped);
         });
@@ -5216,7 +5391,7 @@
     }
 
     async function save() {
-      showMsg('');
+      showMsg('Saving changes…', '');
       let payload;
       try {
         payload = buildPayload();
@@ -5249,8 +5424,8 @@
       fillForm();
       showMsg(
         legacyVideoCount
-          ? 'Saved. Video slides remain in legacy content; the live GlobalBanner uses image slides.'
-          : 'Saved.',
+          ? 'Saved successfully. Video slides remain in legacy content; the live GlobalBanner uses image slides.'
+          : 'Changes saved successfully.',
         'ok'
       );
     }
@@ -5374,7 +5549,9 @@
       showMsg('');
     });
 
-    el('btnSave').addEventListener('click', () => save());
+    el('btnSave').addEventListener('click', () =>
+      withBusyButton(el('btnSave'), 'Saving…', save)
+    );
 
     el('btnAddSlide').addEventListener('click', () => {
       site.hero.slides.unshift({ type: 'image', src: '', alt: '' });
@@ -5563,9 +5740,11 @@
     });
     el('btnPageMedia').addEventListener('click', () => openMediaPicker(el('pageJson')));
     el('btnSavePage').addEventListener('click', () =>
-      saveSelectedPage()
-        .then(() => showMsg('Page saved.', 'ok'))
-        .catch((error) => showMsg(error.message, 'bad'))
+      withBusyButton(el('btnSavePage'), 'Saving…', () =>
+        saveSelectedPage()
+          .then(() => showMsg('Page saved successfully.', 'ok'))
+          .catch((error) => showMsg(error.message, 'bad'))
+      )
     );
     el('btnDeletePage').addEventListener('click', async () => {
       const current = pages.find((item) => String(item._id) === el('pageSelect').value);
@@ -5628,7 +5807,7 @@
         }
         mediaPage = 1;
         await loadMedia(false);
-        if (uploaded) showMsg(uploaded + ' media file(s) uploaded.', 'ok');
+        if (uploaded) showMsg(uploaded + ' media file(s) uploaded successfully.', 'ok');
         else showMsg('No files uploaded.', '');
       } catch (error) {
         showMsg(error.message, 'bad');

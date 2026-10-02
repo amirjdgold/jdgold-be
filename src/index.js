@@ -53,12 +53,11 @@ const SLIDE_STRIP_SM_W = 200;
 const SLIDE_STRIP_SM_H = 512;
 const LOGO_IMAGE_MAX_W = 400;
 const LOGO_IMAGE_MAX_H = 400;
-/** Team member portrait cards (cover crop) */
+/** Team member portrait cards (3∶4) — keep the Admin crop, do not recrop. */
 const PORTRAIT_IMAGE_MAX_W = 640;
-const PORTRAIT_IMAGE_MAX_H = 800;
-/** Home right column gallery thumbnails (wide cover crop) */
-const GALLERY_THUMB_W = 720;
-const GALLERY_THUMB_H = 360;
+const PORTRAIT_IMAGE_MAX_H = 854;
+/** Already-cropped CMS tiles: cap the long edge without changing aspect. */
+const CROPPED_IMAGE_MAX_EDGE = 1600;
 
 async function registerLocalAsset(filename, mimeType, category) {
   const absolute = path.join(CMS_UPLOAD_DIR, filename);
@@ -105,15 +104,15 @@ async function optimizeLogoRaster(absPath) {
   return outName;
 }
 
-async function optimizePortraitRaster(absPath) {
+async function optimizeCroppedRaster(absPath, maxW, maxH) {
   const dir = path.dirname(absPath);
   const outName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.webp`;
   const outAbs = path.join(dir, outName);
   await sharp(absPath, { failOn: 'none' })
     .rotate()
-    .resize(PORTRAIT_IMAGE_MAX_W, PORTRAIT_IMAGE_MAX_H, {
-      fit: 'cover',
-      position: 'attention',
+    .resize(maxW, maxH, {
+      fit: 'inside',
+      withoutEnlargement: true,
     })
     .webp({ quality: 86 })
     .toFile(outAbs);
@@ -121,20 +120,12 @@ async function optimizePortraitRaster(absPath) {
   return outName;
 }
 
+async function optimizePortraitRaster(absPath) {
+  return optimizeCroppedRaster(absPath, PORTRAIT_IMAGE_MAX_W, PORTRAIT_IMAGE_MAX_H);
+}
+
 async function optimizeGalleryThumbRaster(absPath) {
-  const dir = path.dirname(absPath);
-  const outName = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.webp`;
-  const outAbs = path.join(dir, outName);
-  await sharp(absPath, { failOn: 'none' })
-    .rotate()
-    .resize(GALLERY_THUMB_W, GALLERY_THUMB_H, {
-      fit: 'cover',
-      position: 'attention',
-    })
-    .webp({ quality: 86 })
-    .toFile(outAbs);
-  await fs.unlink(absPath);
-  return outName;
+  return optimizeCroppedRaster(absPath, CROPPED_IMAGE_MAX_EDGE, CROPPED_IMAGE_MAX_EDGE);
 }
 
 /** Single slide WebP (fit inside 1200×500) — fallback if dual export fails */
