@@ -24,16 +24,21 @@
   const CROP_HINTS = {
     hero: '12∶5 · 1200×500 · homepage slider',
     portrait: '3∶4 · 640×854 · portrait card',
-    gallery: '2∶1 · 720×360 · wide tile',
+    teamHome: '4∶3 · 640×480 · Home team card',
+    gallery: '2∶1 · 960×480 · wide photo',
+    thumb: '5∶3 · 800×480 · Home gallery tile',
+    tile: '3∶2 · 900×600 · Home row tile',
+    product: '5∶4 · 750×600 · product card',
+    wideRow: '12∶5 · 1200×500 · three-across band',
     square: '1∶1 · 800×800 · square tile',
     process: '4∶3 · 800×600 · process / product card',
     banner: '16∶7 · 1280×560 · wide banner',
-    collage: '8∶3 · 960×360 · collage tile',
+    collage: '4∶3 · 960×720 · collage tile',
     logo: '3∶1 · 600×200 · logo',
     icon: '1∶1 · 256×256 · icon',
     certificate: '3∶4 · 900×1200 · certificate',
     flag: '1∶1 · 256×256 · circular flag',
-    general: 'free crop — keep the subject centered',
+    general: 'free crop — keep faces fully inside the frame',
     wideBand: '4∶1 · 1280×320 · full-width band',
   };
 
@@ -102,8 +107,8 @@
 
   function heroImageCrop(pageType) {
     if (pageType === 'about') return 'portrait';
-    if (pageType === 'factory-refinery') return 'general';
-    if (pageType === 'market-advantages') return 'process';
+    if (pageType === 'factory-refinery') return 'portrait';
+    if (pageType === 'market-advantages') return 'square';
     return 'gallery';
   }
 
@@ -114,11 +119,67 @@
     return 'gallery';
   }
 
+  function sectionUsesPageImage(pageType, section) {
+    const key = String((section && section.key) || '').toLowerCase();
+    if (pageType === 'about') {
+      return key === 'commitment' || key === 'our-commitment';
+    }
+    if (pageType === 'factory-refinery') {
+      return key === 'refinery' || key === 'factory';
+    }
+    return false;
+  }
+
+  function sectionKeyName(section) {
+    return String((section && section.key) || '').toLowerCase();
+  }
+
+  function sectionUsesHeading(pageType, section) {
+    if (pageType !== 'about') return true;
+    return sectionKeyName(section) !== 'pillars';
+  }
+
+  function sectionUsesSubheading(pageType, section) {
+    if (isCompactInnerPage(pageType)) return false;
+    const key = sectionKeyName(section);
+    if (pageType === 'about') {
+      return (
+        key === 'about-intro' ||
+        key === 'jewellery-department' ||
+        key === 'jewelry-department' ||
+        (section && section.type === 'text')
+      );
+    }
+    if (pageType === 'factory-refinery') {
+      return key === 'refinery' || key === 'factory';
+    }
+    if (pageType === 'market-advantages') {
+      return section && section.type === 'achievements';
+    }
+    return false;
+  }
+
+  function sectionUsesDescription(pageType, section) {
+    if (isCompactInnerPage(pageType)) return false;
+    const key = sectionKeyName(section);
+    if (pageType === 'about') {
+      return (
+        key === 'about-intro' ||
+        key === 'jewellery-department' ||
+        key === 'jewelry-department' ||
+        key === 'commitment' ||
+        key === 'our-commitment' ||
+        (section && section.type === 'text')
+      );
+    }
+    return false;
+  }
+
   function galleryCrop(pageType, section) {
     const blob = (((section && section.key) || '') + ' ' + ((section && section.heading) || '')).toLowerCase();
     if (pageType === 'about' && /department/.test(blob)) return 'process';
     if (pageType === 'about' && /collection/.test(blob)) return 'square';
-    if (/event|office|purchase|buy/.test(blob)) return 'collage';
+    if (/event|office|purchase|buy/.test(blob)) return 'process';
     return 'square';
   }
 
@@ -137,7 +198,15 @@
     );
   }
 
-  function listItem(listName, index, body, extraButton) {
+  function listItem(listName, index, body, extraButton, options) {
+    const canRemove = !(options && options.remove === false);
+    const actions =
+      canRemove || extraButton
+        ? '<div class="row">' +
+          (canRemove ? '<button type="button" class="danger" data-remove-item>Remove</button>' : '') +
+          (extraButton || '') +
+          '</div>'
+        : '';
     return (
       '<div class="page-item" data-list-item="' +
       escapeHtml(listName) +
@@ -145,13 +214,13 @@
       index +
       '">' +
       body +
-      '<div class="row"><button type="button" class="danger" data-remove-item>Remove</button>' +
-      (extraButton || '') +
-      '</div></div>'
+      actions +
+      '</div>'
     );
   }
 
-  function renderFeatureList(namePrefix, items) {
+  function renderFeatureList(namePrefix, items, options) {
+    const textOnly = Boolean(options && options.textOnly);
     return (items || [])
       .map((item, index) =>
         listItem(
@@ -164,38 +233,52 @@
               item.description,
               { multiline: true }
             ) +
-            field('Icon', namePrefix + '.' + index + '.icon', item.icon) +
-            field('Image path / URL', namePrefix + '.' + index + '.image', item.image, {
-              placeholder: '/images/… or https://…',
-              crop: 'process',
-            })
+            (textOnly
+              ? hiddenField(namePrefix + '.' + index + '.icon', item.icon)
+              : field('Icon', namePrefix + '.' + index + '.icon', item.icon) +
+                field('Image path / URL', namePrefix + '.' + index + '.image', item.image, {
+                  placeholder: '/images/… or https://…',
+                  crop: 'process',
+                })),
+          '',
+          options
         )
       )
       .join('');
   }
 
-  function renderCardList(namePrefix, items, crop) {
+  function renderCardList(namePrefix, items, crop, options) {
+    const textOnly = Boolean(options && options.textOnly);
     return (items || [])
       .map((item, index) =>
         listItem(
           namePrefix,
           index,
           field('Title', namePrefix + '.' + index + '.title', item.title) +
-            field('Subtitle', namePrefix + '.' + index + '.subtitle', item.subtitle) +
+            (textOnly
+              ? ''
+              : field('Subtitle', namePrefix + '.' + index + '.subtitle', item.subtitle)) +
             field(
               'Description',
               namePrefix + '.' + index + '.description',
               item.description,
               { multiline: true }
             ) +
-            field('Image path / URL', namePrefix + '.' + index + '.image', item.image, {
-              placeholder: '/images/… or https://…',
-              crop: crop || 'portrait',
-            }) +
-            field('Image alt', namePrefix + '.' + index + '.imageAlt', item.imageAlt) +
-            field('Link URL', namePrefix + '.' + index + '.link', item.link, {
-              placeholder: 'tel:… mailto:… or https://…',
-            })
+            (textOnly
+              ? hiddenField(namePrefix + '.' + index + '.icon', item.icon) +
+                field('Link URL', namePrefix + '.' + index + '.link', item.link, {
+                  placeholder: 'tel:… mailto:… or https://…',
+                })
+              : field('Image path / URL', namePrefix + '.' + index + '.image', item.image, {
+                  placeholder: '/images/… or https://…',
+                  crop: crop || 'portrait',
+                }) +
+                field('Image alt', namePrefix + '.' + index + '.imageAlt', item.imageAlt) +
+                field('Link URL', namePrefix + '.' + index + '.link', item.link, {
+                  placeholder: 'tel:… mailto:… or https://…',
+                })),
+          '',
+          options
         )
       )
       .join('');
@@ -388,6 +471,77 @@
     return pageType === 'contact-us';
   }
 
+  function isAboutContactSection(pageType, section) {
+    if (pageType !== 'about' || !section) return false;
+    const key = String(section.key || '').toLowerCase();
+    const heading = String(section.heading || '').toLowerCase();
+    return key === 'contact' || (section.type === 'cards' && heading === 'contact');
+  }
+
+  const ABOUT_CONTACT_FIELDS = [
+    { key: 'phone', title: 'Phone', icon: 'phone', fallback: '+92 300 1234567' },
+    { key: 'whatsapp', title: 'WhatsApp', icon: 'whatsapp', fallback: '+86 18340320420' },
+    { key: 'email', title: 'Email', icon: 'email', fallback: 'info@jdgold.com' },
+    { key: 'website', title: 'Website', icon: 'globe', fallback: 'www.jdgold.com' },
+    {
+      key: 'address',
+      title: 'Address',
+      icon: 'location',
+      fallback: 'Suite #01, Gold Tower, Main Boulevard, Karachi, Pakistan',
+      multiline: true,
+    },
+  ];
+
+  function usableContactText(value) {
+    const text = String(value || '').trim();
+    if (!text || text.indexOf('[PLACEHOLDER') === 0) return '';
+    return text;
+  }
+
+  function aboutContactStored(page) {
+    const content = page && page.content;
+    return content && content.layout === 'about' ? content.contact || {} : {};
+  }
+
+  function aboutContactValue(section, stored, def, index) {
+    const cards = (section && section.cards) || [];
+    const card =
+      cards.find(function (item) {
+        const blob = String((item.title || '') + ' ' + (item.icon || '')).toLowerCase();
+        if (def.key === 'website') return /web|globe/.test(blob);
+        if (def.key === 'address') return /address|location|pin/.test(blob);
+        return blob.indexOf(def.key) !== -1;
+      }) || cards[index];
+    return (
+      usableContactText(card && card.description) ||
+      usableContactText(stored && stored[def.key]) ||
+      def.fallback
+    );
+  }
+
+  function renderAboutContactSection(page, section, index) {
+    const prefix = 'sections.' + index;
+    const stored = aboutContactStored(page);
+    const fields = ABOUT_CONTACT_FIELDS.map(function (def, cardIndex) {
+      return (
+        hiddenField(prefix + '.cards.' + cardIndex + '.title', def.title) +
+        hiddenField(prefix + '.cards.' + cardIndex + '.icon', def.icon) +
+        field(def.title, prefix + '.cards.' + cardIndex + '.description', aboutContactValue(section, stored, def, cardIndex), {
+          multiline: Boolean(def.multiline),
+          rows: def.multiline ? 2 : undefined,
+        })
+      );
+    }).join('');
+    return card(
+      'Contact',
+      hiddenField(prefix + '.key', section.key || 'contact') +
+        hiddenField(prefix + '.type', section.type || 'cards') +
+        hiddenField(prefix + '.sortOrder', String(section.sortOrder ?? index)) +
+        '<p class="hint">Text only — these lines appear in the About page contact bar. Save the page to update the website.</p>' +
+        fields
+    );
+  }
+
   function isCompactInnerPage(pageType) {
     return isManagementGallery(pageType) || isSalesPurchase(pageType) || isContactUs(pageType);
   }
@@ -517,27 +671,49 @@
     };
   }
 
-  function renderSection(pageType, section, index) {
+  function isContactDetailsCards(pageType, section) {
+    if (pageType !== 'contact-us' || !section) return false;
+    const key = sectionKeyName(section);
+    if (key === 'our-offices') return false;
+    if (key === 'contact-channels') return true;
+    return /get in touch|contact detail/i.test(String(section.heading || ''));
+  }
+
+  function renderSection(page, section, index) {
+    const pageType = page.pageType;
     const prefix = 'sections.' + index;
+    if (isAboutContactSection(pageType, section)) {
+      return renderAboutContactSection(page, section, index);
+    }
     let lists = '';
     if (section.type === 'features') {
       lists =
         '<div data-list="' +
         prefix +
         '.features">' +
-        renderFeatureList(prefix + '.features', section.features) +
-        '</div><button type="button" class="secondary" data-add-list="' +
-        prefix +
-        '.features" data-kind="feature">Add feature</button>';
+        renderFeatureList(prefix + '.features', section.features, {
+          textOnly: true,
+          remove: false,
+        }) +
+        '</div>';
     } else if (section.type === 'cards') {
+      const textOnlyCards = isContactDetailsCards(pageType, section);
       lists =
         '<div data-list="' +
         prefix +
         '.cards">' +
-        renderCardList(prefix + '.cards', section.cards, cardImageCrop(pageType)) +
-        '</div><button type="button" class="secondary" data-add-list="' +
-        prefix +
-        '.cards" data-kind="card">Add card</button>';
+        renderCardList(
+          prefix + '.cards',
+          section.cards,
+          cardImageCrop(pageType),
+          textOnlyCards ? { textOnly: true, remove: false } : undefined
+        ) +
+        '</div>' +
+        (textOnlyCards
+          ? ''
+          : '<button type="button" class="secondary" data-add-list="' +
+            prefix +
+            '.cards" data-kind="card">Add card</button>');
     } else if (section.type === 'gallery') {
       lists =
         '<div data-list="' +
@@ -600,13 +776,19 @@
         hiddenField(prefix + '.type', section.type || 'text') +
         hiddenField(prefix + '.sortOrder', String(section.sortOrder ?? index)) +
         sectionHint(pageType, section) +
-        field('Section heading', prefix + '.heading', section.heading) +
-        (!isCompactInnerPage(pageType)
-          ? field('Section subheading', prefix + '.subheading', section.subheading) +
-            field('Section description', prefix + '.description', section.description, {
+        (sectionUsesHeading(pageType, section)
+          ? field('Section heading', prefix + '.heading', section.heading)
+          : '') +
+        (sectionUsesSubheading(pageType, section)
+          ? field('Section subheading', prefix + '.subheading', section.subheading)
+          : '') +
+        (sectionUsesDescription(pageType, section)
+          ? field('Section description', prefix + '.description', section.description, {
               multiline: true,
-            }) +
-            field('Section image path / URL', prefix + '.image', section.image, {
+            })
+          : '') +
+        (sectionUsesPageImage(pageType, section)
+          ? field('Section image path / URL', prefix + '.image', section.image, {
               placeholder: '/images/… or https://…',
               crop: sectionImageCrop(pageType, section),
             }) +
@@ -664,13 +846,9 @@
             crop: heroImageCrop(page.pageType),
           }) +
           field('Hero image alt', 'hero.imageAlt', hero.imageAlt) +
-          field('Background image path / URL', 'hero.backgroundImage', hero.backgroundImage, {
-            placeholder: '/images/… or https://…',
-            crop: 'banner',
-          }) +
           field('Brand tagline', 'hero.brandTagline', hero.brandTagline)
       ) +
-      sections.map((section, index) => renderSection(page.pageType, section, index)).join('') +
+      sections.map((section, index) => renderSection(page, section, index)).join('') +
       (isManagement || isSales || isContact
         ? '<p><button type="button" class="secondary" data-add-section="gallery">Add photo gallery</button></p>'
         : '')
@@ -775,6 +953,30 @@
         }
       });
     });
+
+    if (next.pageType === 'about') {
+      const contactSection = (next.sections || []).find(function (section) {
+        const key = String(section.key || '').toLowerCase();
+        const heading = String(section.heading || '').toLowerCase();
+        return key === 'contact' || (section.type === 'cards' && heading === 'contact');
+      });
+      const cards = (contactSection && contactSection.cards) || [];
+      function cardText(match) {
+        const card = cards.find(function (item) {
+          return match.test(String((item.title || '') + ' ' + (item.icon || '')));
+        });
+        return String((card && card.description) || '').trim();
+      }
+      if (!next.content || typeof next.content !== 'object') next.content = {};
+      next.content.layout = 'about';
+      next.content.contact = {
+        phone: cardText(/phone/i),
+        whatsapp: cardText(/whatsapp/i),
+        email: cardText(/email/i),
+        website: cardText(/web|globe/i),
+        address: cardText(/address|location|pin/i),
+      };
+    }
 
     return next;
   }

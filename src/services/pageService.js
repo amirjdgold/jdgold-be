@@ -2,6 +2,7 @@ import { Page } from '../models/Page.js';
 import { AppError } from '../utils/AppError.js';
 import { assertValidObjectId } from '../utils/mongo.js';
 import { pruneReplacedMedia } from './mediaCleanup.js';
+import { resolveRegisteredUploads } from './seed-media.js';
 
 const LIST_PROJECTION = 'slug title pageType sortOrder metaTitle isActive';
 
@@ -20,7 +21,7 @@ export async function getPageBySlug(slug) {
   if (!page) {
     throw new AppError('Page not found', 404);
   }
-  return page;
+  return resolveRegisteredUploads(page);
 }
 
 export async function createPage(payload) {

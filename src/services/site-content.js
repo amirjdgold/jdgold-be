@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { SITE_CONTENT_ID, SiteContent } from '../models/SiteContent.js';
-import { resolveSeedMedia } from './seed-media.js';
+import { resolveRegisteredUploads, resolveSeedMedia } from './seed-media.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const SITE_CONTENT_SEED_PATH = path.join(
@@ -36,7 +36,7 @@ export async function getSiteContent() {
   const existing = await SiteContent.findOne({
     _id: SITE_CONTENT_ID,
   }).lean();
-  if (existing) return existing.content;
+  if (existing) return resolveRegisteredUploads(existing.content);
 
   const seed = await resolveSeedMedia(await readSiteContentSeed());
   const inserted = await SiteContent.findOneAndUpdate(
@@ -49,7 +49,7 @@ export async function getSiteContent() {
       lean: true,
     },
   );
-  return inserted.content;
+  return resolveRegisteredUploads(inserted.content);
 }
 
 export async function saveSiteContent(content) {
